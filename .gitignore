@@ -4,3 +4,4 @@ __pycache__/
 venv/
 portafolio_*.html
 docs/
+.vscode/
