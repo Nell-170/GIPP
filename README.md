@@ -73,12 +73,23 @@ GIPP/
 ├── src/
 │   ├── app.py                # Interfaz Streamlit
 │   ├── github_extractor.py   # Lectura de repos y READMEs (API de GitHub)
-│   └── llm_agents.py         # Redactor y constructor del HTML (Abacus.AI)
+│   ├── llm_agents.py         # Redactor y constructor de datos (Abacus.AI)
+│   ├── portafolio.py         # Plantilla HTML fija y escapada
+│   └── seguridad.py          # Defensas contra inyección de instrucciones
 ├── Makefile
 ├── requirements.txt
 ├── .env.example
 └── README.md
 ```
+
+## Seguridad
+
+Los README y descripciones de GitHub son texto no confiable (pueden traer instrucciones dirigidas a la IA). Defensas:
+
+- El texto se limpia (caracteres invisibles, comentarios y etiquetas HTML), se recorta y se entrega a la IA delimitado como datos, con una regla que prohíbe obedecerlo.
+- La IA nunca escribe HTML: solo devuelve nombre, titular y habilidades en JSON. La página sale de una plantilla fija con todo escapado, sin scripts ni recursos externos y con Content-Security-Policy.
+- Nombre y habilidades solo se aceptan si aparecen literalmente en tus textos. Los enlaces solo apuntan a tu GitHub.
+- La interfaz muestra alertas si detecta instrucciones sospechosas o enlaces que no están en tus datos, y tú revisas el perfil antes de generar la página.
 
 ## Privacidad
 
