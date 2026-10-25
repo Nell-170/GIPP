@@ -94,7 +94,7 @@ Los README y descripciones de GitHub son texto no confiable (pueden traer instru
 ## Privacidad
 
 - Solo se leen repositorios públicos.
-- Los READMEs se procesan en memoria, se recortan a 1500 caracteres y no se guardan.
+- Los READMEs se procesan en memoria, se recortan a 3000 caracteres (inicio y final, donde suelen ir los créditos) y no se guardan.
 - Solo se pide el README de los repos que seleccionas.
 
 ## Estado

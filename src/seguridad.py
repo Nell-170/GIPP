@@ -7,7 +7,7 @@ Nada de aquí reemplaza la revisión humana: sirve para avisarle a la persona us
 """
 import re
 
-README_MAX_CHARS = 2500
+README_MAX_CHARS = 3000
 README_DESCARGA_MAX = 8000
 NOTA_MAX_CHARS = 300
 CAMPO_MAX_CHARS = 200
