@@ -7,7 +7,8 @@ Nada de aquí reemplaza la revisión humana: sirve para avisarle a la persona us
 """
 import re
 
-README_MAX_CHARS = 1500
+README_MAX_CHARS = 2500
+README_DESCARGA_MAX = 8000
 NOTA_MAX_CHARS = 300
 CAMPO_MAX_CHARS = 200
 
@@ -76,6 +77,40 @@ def sanitizar(texto: str | None, max_chars: int) -> str:
     t = _ETIQUETA_HTML.sub("", t)
     t = _LINEAS_VACIAS.sub("\n\n", t).strip()
     return t[:max_chars]
+
+
+def recortar_extremos(texto: str, max_chars: int) -> str:
+    """Si el texto es largo, conserva el inicio y el final (los créditos suelen ir al final)."""
+    if len(texto) <= max_chars:
+        return texto
+    inicio = int(max_chars * 0.7)
+    return texto[:inicio].rstrip() + "\n[...]\n" + texto[-(max_chars - inicio):].lstrip()
+
+
+_SEÑAL_EQUIPO = re.compile(
+    r"cr[eé]ditos|autores|integrantes|equipo|colaborador|desarrollado por|elaborado por|"
+    r"grupo|grupal|compa[ñn]er|credits|authors|contributors|team|members|developed by|"
+    r"built by|\b[BC]\d{5}\b",
+    re.IGNORECASE,
+)
+
+
+def señales_equipo(texto: str | None) -> bool:
+    """True si el texto sugiere que el trabajo fue de más de una persona."""
+    return bool(texto and _SEÑAL_EQUIPO.search(texto))
+
+
+_AUTORIA_UNICA = re.compile(
+    r"\b(yo solo|yo sola|por mi cuenta|completamente solo|completamente sola|"
+    r"[uú]nicamente yo|(?:lo|la) (?:hice|desarroll[eé]|constru[ií]) (?:yo )?(?:solo|sola|todo|toda)|"
+    r"desarroll[eé] (?:todo|toda|por completo|de principio a fin|de forma individual)|"
+    r"(?:constru[ií]|cre[eé]|dise[ñn][eé]|implement[eé]) (?:todo|toda|por completo|desde cero yo))",
+    re.IGNORECASE,
+)
+
+
+def afirma_autoria_unica(texto: str | None) -> bool:
+    return bool(texto and _AUTORIA_UNICA.search(texto))
 
 
 def en_una_linea(texto: str | None, max_chars: int) -> str:

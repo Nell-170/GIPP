@@ -19,11 +19,15 @@ from seguridad import (
     CAMPO_MAX_CHARS,
     NOTA_MAX_CHARS,
     README_MAX_CHARS,
+    README_DESCARGA_MAX,
     aparece_en,
     detectar_inyeccion,
     en_una_linea,
     enlaces_no_respaldados,
+    afirma_autoria_unica,
     limpiar_visible,
+    recortar_extremos,
+    señales_equipo,
     marcar_no_confiable,
     sanitizar,
 )
@@ -32,6 +36,25 @@ DEFAULT_BASE_URL = "https://routellm.abacus.ai/v1"  # verificar en la documentac
 DEFAULT_MODEL = "gpt-4o"  # ajustar al modelo disponible en la cuenta
 
 PERFIL_MAX_CHARS = 4000
+
+
+def _recortar_readme(texto: str | None) -> str:
+    return recortar_extremos(sanitizar(texto, README_DESCARGA_MAX), README_MAX_CHARS)
+
+
+def _linea_autoria(colaboradores: list[str] | None, readme: str, nota: str) -> tuple[str, bool]:
+    """Describe quién participó, para que el Redactor no atribuya todo a una sola persona."""
+    logins = [en_una_linea(c, 39) for c in colaboradores or []][:10]
+    equipo = len(logins) > 1 or señales_equipo(readme) or señales_equipo(nota)
+    if colaboradores is None:
+        cuentas = "no se pudo consultar"
+    else:
+        cuentas = f"{len(logins)} ({', '.join(logins)})" if logins else "0 (sin datos)"
+    if equipo:
+        veredicto = "TRABAJO EN EQUIPO: no atribuyas el proyecto a una sola persona."
+    else:
+        veredicto = "No hay señales de otros autores, pero tampoco afirmes autoría exclusiva."
+    return f"Colaboradores según GitHub: {cuentas}\nAutoría: {veredicto}", equipo
 MAX_HABILIDADES = 25
 
 
@@ -60,6 +83,14 @@ SYSTEM_REDACTOR = (
     "'bien posicionado', 'contribuir significativamente'. No elogies a la persona ni uses "
     "adjetivos vacíos: los hechos concretos hablan solos. Varia el largo de las frases y no "
     "empieces varios párrafos con el mismo patrón. "
+    "AUTORÍA (obligatoria): lo que la persona dice de su rol y quién hizo el proyecto son cosas "
+    "distintas. 'Trabajé en todo el proyecto' significa que participó en todas las partes, NO que lo "
+    "hizo sola. Cuando los datos indiquen más de una persona (varios colaboradores en GitHub, sección "
+    "de créditos, autores, integrantes, 'equipo', varios nombres), escribe 'participé en', 'colaboré "
+    "en', 'junto con mi equipo' o 'con otras dos personas', y puedes decir que trabajó en todas las "
+    "partes si la nota lo dice. Prohibido 'hice todo', 'yo solo', 'desarrollé el proyecto completo' "
+    "o equivalentes en proyectos de equipo. Solo si todos los datos apuntan a una única persona "
+    "puedes usar 'desarrollé'. Ante la duda, usa el verbo neutro 'participé'. "
     "REGLA CRÍTICA: no inventes tecnologías, métricas, responsabilidades ni logros que no aparezcan "
     "en los datos proporcionados. Si un proyecto no tiene nota del usuario, describe SOLO lo que el "
     "README afirma literalmente, sin inferir el rol. No menciones frases como 'sin nota'. "
@@ -115,6 +146,7 @@ def redactar_perfil(
 
     usuario = en_una_linea(usuario, 39)
     alertas: list[str] = []
+    hay_equipo = False
     fuentes: list[str] = [usuario]
     bloques = []
     for r in repos_elegidos:
@@ -126,9 +158,12 @@ def redactar_perfil(
         for etiqueta, crudo in (("el README", readme_crudo), ("la descripción", r.get("description") or "")):
             for señal in detectar_inyeccion(crudo):
                 alertas.append(f"En {etiqueta} de «{nombre}»: {señal}.")
-        readme = sanitizar(readme_crudo, README_MAX_CHARS)
+        readme = _recortar_readme(readme_crudo)
+        autoria, equipo = _linea_autoria(r.get("colaboradores"), readme, nota)
+        hay_equipo = hay_equipo or equipo
         fuentes += [nombre, lenguaje, descripcion, nota, readme]
         contenido = (
+            f"{autoria}\n"
             f"Lenguaje: {lenguaje or 'no indicado'}\n"
             f"Descripción: {descripcion or 'no indicada'}\n"
             f"Nota del usuario sobre su rol: {nota or '(sin nota)'}\n"
@@ -140,7 +175,7 @@ def redactar_perfil(
     if sobre_mi:
         for señal in detectar_inyeccion(sobre_mi):
             alertas.append(f"En tu README de perfil: {señal}.")
-        presentacion = sanitizar(sobre_mi, README_MAX_CHARS)
+        presentacion = _recortar_readme(sobre_mi)
         fuentes.append(presentacion)
         user += (
             "\n\nREADME del perfil que la persona escribió en GitHub "
@@ -153,6 +188,11 @@ def redactar_perfil(
     )
 
     perfil = _chat(SYSTEM_REDACTOR, user, temperature=0.4)[:PERFIL_MAX_CHARS]
+    if hay_equipo and afirma_autoria_unica(perfil):
+        alertas.append(
+            "Algún repo parece de equipo (varios colaboradores o créditos) y el perfil sugiere que lo "
+            "hiciste tú solo. Corrígelo, por ejemplo con «participé en…»."
+        )
     ajenos = enlaces_no_respaldados(perfil, fuentes)
     if ajenos:
         alertas.append(
@@ -215,7 +255,7 @@ def construir_portafolio(
         raise LLMError("El perfil está vacío.")
 
     usuario = en_una_linea(usuario, 39)
-    presentacion = sanitizar(sobre_mi, README_MAX_CHARS)
+    presentacion = _recortar_readme(sobre_mi)
     fuentes = resumen + "\n" + presentacion
     user = f"Usuario de GitHub: {usuario}\n\n" + marcar_no_confiable("perfil aprobado", sanitizar(resumen, PERFIL_MAX_CHARS))
     if presentacion:

@@ -10,7 +10,7 @@ import re
 import requests
 
 GITHUB_API = "https://api.github.com"
-README_MAX_CHARS = 1500
+README_MAX_CHARS = 8000
 TIMEOUT_SEGUNDOS = 15
 
 
@@ -80,3 +80,14 @@ def obtener_readme(usuario: str, nombre_repo: str) -> str:
     except GitHubError:
         return ""  # el README es opcional; el flujo sigue sin él
     return resp.text[:README_MAX_CHARS]
+
+
+def obtener_colaboradores(usuario: str, nombre_repo: str) -> list[str] | None:
+    """Logins de quienes contribuyeron al repo según GitHub. None si no se pudo consultar."""
+    try:
+        datos = _get(f"{GITHUB_API}/repos/{usuario}/{nombre_repo}/contributors?per_page=30").json()
+    except (GitHubError, ValueError):
+        return None
+    if not isinstance(datos, list):
+        return None
+    return [c["login"] for c in datos if isinstance(c, dict) and isinstance(c.get("login"), str)]
