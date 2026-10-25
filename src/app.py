@@ -11,6 +11,7 @@ import streamlit.components.v1 as components
 from dotenv import load_dotenv
 
 from github_extractor import GitHubError, listar_repos, normalizar_usuario, obtener_readme
+from portafolio import TEMAS
 from llm_agents import LLMError, construir_portafolio, redactar_perfil
 from seguridad import limpiar_visible
 
@@ -118,6 +119,12 @@ if st.session_state.perfil:
     st.text_area("Perfil generado", key="perfil_editado", height=260)
     st.info("Revisa que todo lo escrito sea cierto. Corrige lo que no lo sea antes de continuar.")
 
+    plantilla = st.selectbox(
+        "Plantilla del portafolio",
+        list(TEMAS),
+        format_func=lambda clave: TEMAS[clave][0],
+    )
+
     if st.button("Aprobar y generar portafolio"):
         perfil_final = st.session_state.perfil_editado.strip()
         if not perfil_final:
@@ -130,6 +137,7 @@ if st.session_state.perfil:
                         perfil_final,
                         st.session_state.elegidos,
                         st.session_state.get("sobre_mi_usado"),
+                        plantilla,
                     )
                     st.session_state.html = html
                     st.session_state.avisos = avisos

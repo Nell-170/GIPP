@@ -198,7 +198,11 @@ def _validar_datos(crudo: dict, fuentes: str, usuario: str) -> tuple[str, str, l
 
 
 def construir_portafolio(
-    usuario: str, perfil: str, repos_elegidos: list[dict], sobre_mi: str | None = None
+    usuario: str,
+    perfil: str,
+    repos_elegidos: list[dict],
+    sobre_mi: str | None = None,
+    plantilla: str = "moderno",
 ) -> tuple[str, list[str]]:
     """Agente Constructor. Devuelve (HTML, avisos).
 
@@ -239,5 +243,5 @@ def construir_portafolio(
         for r in repos_elegidos
         if en_una_linea(r.get("name"), 100)
     ]
-    html = renderizar_portafolio(usuario, nombre, titular, resumen, habilidades, proyectos)
+    html = renderizar_portafolio(usuario, nombre, titular, resumen, habilidades, proyectos, plantilla)
     return html, avisos
