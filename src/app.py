@@ -3,6 +3,7 @@
 Ejecutar desde la raíz del proyecto:
     streamlit run src/app.py
 """
+import html as html_lib
 import re
 from pathlib import Path
 
@@ -10,10 +11,17 @@ import streamlit as st
 import streamlit.components.v1 as components
 from dotenv import load_dotenv
 
-from github_extractor import GitHubError, listar_repos, normalizar_usuario, obtener_readme
+from github_extractor import (
+    GitHubError,
+    listar_repos,
+    normalizar_usuario,
+    obtener_colaboradores,
+    obtener_readme,
+)
 from portafolio import TEMAS
 from llm_agents import LLMError, construir_portafolio, redactar_perfil
-from seguridad import limpiar_visible
+from portafolio import renderizar_portafolio
+from seguridad import en_una_linea, limpiar_visible
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
@@ -25,6 +33,22 @@ st.caption("Tú decides qué repos entran y qué se publica. La IA solo redacta 
 
 def sin_markdown(texto):
     return re.sub(r"([\\`*_{}\[\]()#+!<>|~$-])", r"\\\1", limpiar_visible(texto or "", 200))
+
+
+def vista_previa(documento, alto=430, escala=0.5):
+    ancho = int(100 / escala)
+    marco = html_lib.escape(documento, quote=True)
+    components.html(
+        f'<div style="height:{alto}px;overflow:hidden;border:1px solid #8884;border-radius:10px;background:#fff">'
+        f'<iframe sandbox="" srcdoc="{marco}" scrolling="no" '
+        f'style="width:{ancho}%;height:{int(alto / escala)}px;border:0;transform:scale({escala});'
+        'transform-origin:0 0"></iframe></div>',
+        height=alto + 8,
+    )
+
+
+def mover_plantilla(paso):
+    st.session_state.indice_plantilla = (st.session_state.indice_plantilla + paso) % len(TEMAS)
 
 
 for clave in ("usuario", "repos", "perfil", "html", "sobre_mi", "alertas", "avisos", "elegidos"):
@@ -95,6 +119,9 @@ if repos:
                 with st.spinner("Leyendo READMEs y redactando el perfil..."):
                     for elegido in elegidos:
                         elegido["readme"] = obtener_readme(st.session_state.usuario, elegido["name"])
+                        elegido["colaboradores"] = obtener_colaboradores(
+                            st.session_state.usuario, elegido["name"]
+                        )
                     perfil, alertas = redactar_perfil(st.session_state.usuario, elegidos, sobre_mi)
                 st.session_state.sobre_mi_usado = sobre_mi
                 st.session_state.perfil = perfil
@@ -119,13 +146,42 @@ if st.session_state.perfil:
     st.text_area("Perfil generado", key="perfil_editado", height=260)
     st.info("Revisa que todo lo escrito sea cierto. Corrige lo que no lo sea antes de continuar.")
 
-    plantilla = st.selectbox(
-        "Plantilla del portafolio",
-        list(TEMAS),
-        format_func=lambda clave: TEMAS[clave][0],
+    st.subheader("Elige la plantilla")
+    st.session_state.setdefault("indice_plantilla", 0)
+    plantilla = list(TEMAS)[st.session_state.indice_plantilla]
+    izquierda, centro, derecha = st.columns([1, 4, 1])
+    izquierda.button("◀", key="plantilla_anterior", on_click=mover_plantilla, args=(-1,), use_container_width=True)
+    derecha.button("▶", key="plantilla_siguiente", on_click=mover_plantilla, args=(1,), use_container_width=True)
+    centro.markdown(
+        f"<div style='text-align:center'><b>{html_lib.escape(TEMAS[plantilla][0])}</b><br>"
+        f"{st.session_state.indice_plantilla + 1} de {len(TEMAS)}</div>",
+        unsafe_allow_html=True,
     )
+    try:
+        proyectos_previa = [
+            {
+                "name": en_una_linea(r.get("name"), 100),
+                "language": en_una_linea(r.get("language"), 40) or None,
+                "description": en_una_linea(r.get("description"), 200) or None,
+                "url": r.get("html_url") or r.get("url"),
+            }
+            for r in st.session_state.elegidos or []
+        ]
+        vista_previa(
+            renderizar_portafolio(
+                st.session_state.usuario,
+                "",
+                "",
+                limpiar_visible(st.session_state.perfil_editado or "", 4000),
+                [],
+                proyectos_previa,
+                plantilla,
+            )
+        )
+    except ValueError:
+        st.warning("No se pudo generar la vista previa.")
 
-    if st.button("Aprobar y generar portafolio"):
+    if st.button(f"Aprobar y generar portafolio con «{TEMAS[plantilla][0]}»", type="primary"):
         perfil_final = st.session_state.perfil_editado.strip()
         if not perfil_final:
             st.error("El perfil está vacío.")
