@@ -113,6 +113,36 @@ def afirma_autoria_unica(texto: str | None) -> bool:
     return bool(texto and _AUTORIA_UNICA.search(texto))
 
 
+_CORREO = re.compile(r"[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*\.[A-Za-z]{2,24}")
+_LINKEDIN = re.compile(
+    r"(?:https?://)?(?:[a-z]{2,3}\.|www\.)?linkedin\.com/in/([A-Za-z0-9%_-]{3,100})/?", re.IGNORECASE
+)
+
+
+def validar_contacto(correo: str | None, linkedin: str | None) -> tuple[dict[str, str], list[str]]:
+    """Valida los datos de contacto que escribe la persona. Devuelve (datos válidos, errores).
+
+    Solo se aceptan un correo con forma estándar y un perfil de linkedin.com/in/...;
+    el enlace se reconstruye a partir de datos validados, nunca se copia tal cual.
+    """
+    datos: dict[str, str] = {}
+    errores: list[str] = []
+    correo = (correo or "").strip()
+    if correo:
+        if len(correo) <= 120 and _CORREO.fullmatch(correo):
+            datos["correo"] = correo
+        else:
+            errores.append("El correo no tiene un formato válido (ejemplo: nombre@dominio.com).")
+    linkedin = (linkedin or "").strip()
+    if linkedin:
+        m = _LINKEDIN.fullmatch(linkedin)
+        if m:
+            datos["linkedin"] = "https://www.linkedin.com/in/" + m.group(1)
+        else:
+            errores.append("El enlace de LinkedIn debe ser de la forma https://www.linkedin.com/in/tu-usuario.")
+    return datos, errores
+
+
 def en_una_linea(texto: str | None, max_chars: int) -> str:
     """Para campos cortos (nombre, descripción): una sola línea, sin etiquetas."""
     return re.sub(r"\s+", " ", sanitizar(texto, max_chars * 3)).strip()[:max_chars]

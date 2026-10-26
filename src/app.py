@@ -21,7 +21,7 @@ from github_extractor import (
 from portafolio import TEMAS
 from llm_agents import LLMError, construir_portafolio, redactar_perfil
 from portafolio import renderizar_portafolio
-from seguridad import en_una_linea, limpiar_visible
+from seguridad import en_una_linea, limpiar_visible, validar_contacto
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
@@ -146,6 +146,19 @@ if st.session_state.perfil:
     st.text_area("Perfil generado", key="perfil_editado", height=260)
     st.info("Revisa que todo lo escrito sea cierto. Corrige lo que no lo sea antes de continuar.")
 
+    st.subheader("Contacto (opcional)")
+    st.caption(
+        "Lo escribes tú: la IA no lo ve ni lo modifica. Lo que pongas será público en tu portafolio."
+    )
+    columna_correo, columna_linkedin = st.columns(2)
+    correo = columna_correo.text_input("Correo", key="contacto_correo", placeholder="nombre@dominio.com")
+    linkedin = columna_linkedin.text_input(
+        "LinkedIn", key="contacto_linkedin", placeholder="https://www.linkedin.com/in/tu-usuario"
+    )
+    contacto, errores_contacto = validar_contacto(correo, linkedin)
+    for error in errores_contacto:
+        st.error(error)
+
     st.subheader("Elige la plantilla")
     st.session_state.setdefault("indice_plantilla", 0)
     plantilla = list(TEMAS)[st.session_state.indice_plantilla]
@@ -176,6 +189,7 @@ if st.session_state.perfil:
                 [],
                 proyectos_previa,
                 plantilla,
+                contacto,
             )
         )
     except ValueError:
@@ -185,6 +199,8 @@ if st.session_state.perfil:
         perfil_final = st.session_state.perfil_editado.strip()
         if not perfil_final:
             st.error("El perfil está vacío.")
+        elif errores_contacto:
+            st.error("Corrige los datos de contacto o déjalos vacíos para continuar.")
         else:
             try:
                 with st.spinner("Generando la página..."):
@@ -194,6 +210,7 @@ if st.session_state.perfil:
                         st.session_state.elegidos,
                         st.session_state.get("sobre_mi_usado"),
                         plantilla,
+                        contacto,
                     )
                     st.session_state.html = html
                     st.session_state.avisos = avisos

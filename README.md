@@ -63,7 +63,7 @@ La primera vez que ejecutes Streamlit puede pedirte un correo en la consola. Es 
 
 1. **Usuario de GitHub:** escribe tu usuario o la URL de tu perfil.
 2. **Repositorios:** marca los que quieres incluir y escribe, si quieres, una línea sobre tu rol en cada uno. Si no escribes nada, la IA solo describirá lo que dice el README. Si tu perfil tiene un README propio (el repositorio con tu nombre de usuario), puedes decidir si se incluye: ahí suelen estar tu presentación y las herramientas que usas, y el portafolio las lista tal cual, sin inventar nada.
-3. **Revisión:** lee el perfil generado, corrige lo que no sea cierto y aprueba.
+3. **Revisión:** lee el perfil generado, corrige lo que no sea cierto y aprueba. Aquí también eliges la plantilla y, si quieres, escribes tu contacto (correo y LinkedIn). La IA no ve ni modifica el contacto; se valida el formato y será público en la página.
 4. **Portafolio:** descarga el archivo HTML o revisa la vista previa.
 
 ## Estructura

@@ -243,6 +243,7 @@ def construir_portafolio(
     repos_elegidos: list[dict],
     sobre_mi: str | None = None,
     plantilla: str = "moderno",
+    contacto: dict | None = None,
 ) -> tuple[str, list[str]]:
     """Agente Constructor. Devuelve (HTML, avisos).
 
@@ -283,5 +284,5 @@ def construir_portafolio(
         for r in repos_elegidos
         if en_una_linea(r.get("name"), 100)
     ]
-    html = renderizar_portafolio(usuario, nombre, titular, resumen, habilidades, proyectos, plantilla)
+    html = renderizar_portafolio(usuario, nombre, titular, resumen, habilidades, proyectos, plantilla, contacto)
     return html, avisos

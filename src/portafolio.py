@@ -3,6 +3,8 @@
 import html
 import re
 
+from seguridad import validar_contacto
+
 ESTILOS_CSS = """
 :root {
   --fondo: #f5f6fa;
@@ -136,6 +138,11 @@ a:hover { text-decoration: underline; }
   box-shadow: var(--sombra); transition: border-color 0.15s ease, transform 0.15s ease;
 }
 .chips li:hover { border-color: var(--acento); transform: translateY(-1px); }
+
+.chips.contacto li { padding: 0; }
+.boton-contacto { display: block; padding: 0.55rem 1.2rem; font-weight: 600; color: var(--acento); }
+.boton-contacto:hover { text-decoration: none; background: var(--acento-suave); border-radius: 999px; }
+.contacto-dato { margin: 0.9rem 0 0; color: var(--atenuado); font-size: 0.95rem; overflow-wrap: anywhere; }
 
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.1rem; }
 
@@ -408,7 +415,7 @@ PLANTILLA_HTML = """<!DOCTYPE html>
 
 def renderizar_portafolio(usuario: str, nombre: str, titular: str, resumen: str,
                           habilidades: list[str], proyectos: list[dict],
-                          plantilla: str = "moderno") -> str:
+                          plantilla: str = "moderno", contacto: dict | None = None) -> str:
     """Genera el HTML del portafolio a partir de datos ya validados."""
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9-]{0,38}", usuario):
         raise ValueError("Usuario de GitHub no válido.")
@@ -497,6 +504,32 @@ def renderizar_portafolio(usuario: str, nombre: str, titular: str, resumen: str,
             "</section>"
         )
 
+    datos_contacto, _ = validar_contacto((contacto or {}).get("correo"), (contacto or {}).get("linkedin"))
+    botones = [
+        '<li><a class="boton-contacto" href="https://github.com/' + html.escape(usuario)
+        + '" target="_blank" rel="noopener noreferrer">GitHub</a></li>'
+    ]
+    if "linkedin" in datos_contacto:
+        botones.append(
+            '<li><a class="boton-contacto" href="' + html.escape(datos_contacto["linkedin"])
+            + '" target="_blank" rel="noopener noreferrer">LinkedIn</a></li>'
+        )
+    if "correo" in datos_contacto:
+        botones.append(
+            '<li><a class="boton-contacto" href="mailto:' + html.escape(datos_contacto["correo"])
+            + '">Enviar un correo</a></li>'
+        )
+    if len(botones) > 1:
+        detalle = (
+            '<p class="contacto-dato">' + html.escape(datos_contacto["correo"]) + "</p>"
+            if "correo" in datos_contacto else ""
+        )
+        secciones.append(
+            '<section class="seccion" aria-labelledby="contacto">'
+            '<h2 id="contacto">Contacto</h2>'
+            '<ul class="chips contacto">' + "".join(botones) + "</ul>" + detalle + "</section>"
+        )
+
     metricas = []
     for cantidad, etiqueta in (
         (len(tarjetas), "proyectos"),
@@ -513,6 +546,7 @@ def renderizar_portafolio(usuario: str, nombre: str, titular: str, resumen: str,
             ('id="sobre-mi"', ("sobre-mi", "Sobre mí")),
             ('id="habilidades"', ("habilidades", "Habilidades")),
             ('id="proyectos"', ("proyectos", "Proyectos")),
+            ('id="contacto"', ("contacto", "Contacto")),
         )
         if any(marca in seccion for seccion in secciones)
     ]
