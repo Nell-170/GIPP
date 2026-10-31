@@ -155,9 +155,11 @@ if repos:
             cv_texto = texto_de_cv(archivo_cv.name, archivo_cv.getvalue())
             st.session_state.cv_texto = cv_texto
             st.session_state.cv_nombre = archivo_cv.name
+            st.session_state.cv_archivo = archivo_cv.getvalue()
         except ValueError as exc:
             cv_texto = None
             st.session_state.cv_texto = None
+            st.session_state.cv_archivo = None
             st.error(str(exc))
     if cv_texto:
         st.success(f"CV leído: {st.session_state.get('cv_nombre', 'archivo')} ({len(cv_texto)} caracteres).")
@@ -165,6 +167,12 @@ if repos:
             st.text(cv_texto[:4000])
         if not st.checkbox("Incluir mi CV al redactar el perfil", value=True, key="incluir_cv"):
             cv_texto = None
+        if (st.session_state.get("cv_nombre") or "").lower().endswith(".pdf"):
+            st.checkbox(
+                "Ofrecer el PDF para descargar en la sección de contacto del portafolio",
+                value=True,
+                key="cv_descargable",
+            )
     else:
         cv_texto = None
 
@@ -234,6 +242,13 @@ if st.session_state.perfil:
     for error in errores_contacto:
         st.error(error)
 
+    cv_para_pagina = None
+    if st.session_state.get("cv_descargable") and st.session_state.get("cv_archivo"):
+        cv_para_pagina = {
+            "nombre": st.session_state.get("cv_nombre"),
+            "contenido": st.session_state.cv_archivo,
+        }
+
     st.subheader("Elige la plantilla")
     st.session_state.setdefault("indice_plantilla", 0)
     plantilla = list(TEMAS)[st.session_state.indice_plantilla]
@@ -265,6 +280,7 @@ if st.session_state.perfil:
                 proyectos_previa,
                 plantilla,
                 contacto,
+                cv_para_pagina,
             )
         )
     except ValueError:
@@ -286,6 +302,7 @@ if st.session_state.perfil:
                         st.session_state.get("sobre_mi_usado"),
                         plantilla,
                         contacto,
+                        cv_para_pagina,
                     )
                     st.session_state.html = html
                     st.session_state.avisos = avisos

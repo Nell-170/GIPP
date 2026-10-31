@@ -1,9 +1,10 @@
 """Renderiza el portafolio HTML a partir de datos ya validados."""
 
+import base64
 import html
 import re
 
-from seguridad import validar_contacto
+from seguridad import cv_incrustable, validar_contacto
 
 ESTILOS_CSS = """
 :root {
@@ -131,6 +132,7 @@ a:hover { text-decoration: underline; }
 .chips.contacto li { padding: 0; }
 .boton-contacto { display: block; padding: 0.55rem 1.2rem; font-weight: 600; color: var(--acento); }
 .boton-contacto:hover { text-decoration: none; background: var(--acento-suave); border-radius: 999px; }
+.boton-contacto[download] { color: var(--acento-2); }
 .contacto-dato { margin: 0.9rem 0 0; color: var(--atenuado); font-size: 0.95rem; overflow-wrap: anywhere; }
 
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.1rem; }
@@ -438,7 +440,8 @@ PLANTILLA_HTML = """<!DOCTYPE html>
 
 def renderizar_portafolio(usuario: str, nombre: str, titular: str, resumen: str,
                           habilidades: list[str], proyectos: list[dict],
-                          plantilla: str = "moderno", contacto: dict | None = None) -> str:
+                          plantilla: str = "moderno", contacto: dict | None = None,
+                          cv: dict | None = None) -> str:
     """Genera el HTML del portafolio a partir de datos ya validados."""
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9-]{0,38}", usuario):
         raise ValueError("Usuario de GitHub no válido.")
@@ -541,6 +544,13 @@ def renderizar_portafolio(usuario: str, nombre: str, titular: str, resumen: str,
         botones.append(
             '<li><a class="boton-contacto" href="mailto:' + html.escape(datos_contacto["correo"])
             + '">Enviar un correo</a></li>'
+        )
+    tipo_cv = cv_incrustable((cv or {}).get("nombre"), (cv or {}).get("contenido"))
+    if tipo_cv:
+        datos = base64.b64encode(cv["contenido"]).decode("ascii")
+        botones.append(
+            '<li><a class="boton-contacto" href="data:' + tipo_cv + ';base64,' + datos
+            + '" download="' + html.escape("CV_" + usuario + ".pdf") + '">Descargar CV (PDF)</a></li>'
         )
     if len(botones) > 1:
         detalle = (

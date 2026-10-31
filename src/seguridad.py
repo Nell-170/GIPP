@@ -12,6 +12,7 @@ README_MAX_CHARS = 3000
 README_DESCARGA_MAX = 8000
 CV_MAX_CHARS = 4000
 CV_ARCHIVO_MAX_BYTES = 5 * 1024 * 1024
+CV_INCRUSTADO_MAX_BYTES = 2 * 1024 * 1024
 NOTA_MAX_CHARS = 300
 CAMPO_MAX_CHARS = 200
 
@@ -299,6 +300,15 @@ def markdown_a_html(texto: str | None) -> str:
     )
     html = _MD_URL_SUELTA.sub(lambda m: _md_enlace(m.group(1), html_escape(m.group(1))), html)
     return html
+
+
+def cv_incrustable(nombre: str, contenido: bytes | None) -> str | None:
+    """Devuelve el tipo MIME si el CV se puede incrustar en la página (PDF pequeño), o None."""
+    if not contenido or not (nombre or "").lower().endswith(".pdf"):
+        return None
+    if len(contenido) > CV_INCRUSTADO_MAX_BYTES or not contenido.startswith(b"%PDF-"):
+        return None
+    return "application/pdf"
 
 
 def en_una_linea(texto: str | None, max_chars: int) -> str:
