@@ -222,7 +222,6 @@ footer p { margin: 0; }
 }
 
 .hero { animation: gipp-aparecer 0.6s ease-out both; }
-.avatar { animation: gipp-aparecer 0.6s ease-out both, gipp-latido 4s ease-in-out 1s infinite; }
 .metricas li { animation: gipp-aparecer 0.5s ease-out both; }
 .metricas li:nth-child(2) { animation-delay: 0.08s; }
 .metricas li:nth-child(3) { animation-delay: 0.16s; }
@@ -248,16 +247,51 @@ footer p { margin: 0; }
 .seccion h2::before { transition: transform 0.2s ease; }
 .seccion h2:hover::before { transform: scaleY(1.15); }
 
+/* --- Animaciones al entrar en pantalla (solo CSS, sin scripts) ---
+   animation-timeline: view() no está en el estándar estable: los navegadores que no la
+   soportan ignoran la declaración y dejan la animación normal de arriba. */
+@keyframes gipp-entrar {
+  from { opacity: 0; transform: translateY(28px) scale(0.985); }
+  to { opacity: 1; transform: none; }
+}
+@supports (animation-timeline: view()) {
+  .seccion {
+    animation: gipp-entrar linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 32%;
+  }
+  .seccion .tarjeta, .seccion .chips li {
+    animation: gipp-entrar linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 45%;
+  }
+}
+
+/* --- Subrayado que crece al pasar el ratón --- */
+.titulo-proyecto a, .ver a, .menu a { position: relative; }
+.titulo-proyecto a::after, .ver a::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -2px; height: 2px;
+  background: currentColor; border-radius: 2px;
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 0.25s ease;
+}
+.titulo-proyecto a:hover::after, .ver a:hover::after { transform: scaleX(1); }
+
+/* --- Icono del avatar: flotación suave --- */
+.avatar { animation: gipp-aparecer 0.6s ease-out both, gipp-latido 4s ease-in-out 1s infinite, gipp-flotar 5s ease-in-out 1.2s infinite; }
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .saltar, .tarjeta, .chips li, a, .boton-contacto, .seccion h2::before { transition: none; }
-  .hero, .avatar, .metricas li, .menu li, .tarjeta, .chips li, .tarjeta::before {
+  .saltar, .tarjeta, .chips li, a, .boton-contacto, .seccion h2::before,
+  .titulo-proyecto a::after, .ver a::after { transition: none; }
+  .hero, .avatar, .metricas li, .menu li, .tarjeta, .chips li, .tarjeta::before, .seccion {
     animation: none !important;
   }
 }
 
 @media print {
   * { animation: none !important; transition: none !important; }
+  .titulo-proyecto a::after, .ver a::after { display: none; }
   body { background: #ffffff; color: #000000; }
   .banda { background: #ffffff; color: #000000; padding: 0 0 1rem; border-bottom: 2px solid #333333; }
   .avatar { display: none; }
