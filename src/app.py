@@ -32,8 +32,54 @@ from seguridad import (
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 st.set_page_config(page_title="GIPP", page_icon="📄", layout="centered")
-st.title("GIPP: Generador Inteligente de Portafolios Profesionales")
-st.caption("Tú decides qué repos entran y qué se publica. La IA solo redacta con lo que confirmas.")
+
+ESTILOS_APP = """
+<style>
+  :root { --gipp-acento: #3b5bdb; --gipp-acento-2: #7048e8; }
+  .block-container { padding-top: 2.2rem; max-width: 900px; }
+  .gipp-hero {
+    background: radial-gradient(circle at 15% 0%, rgba(255,255,255,0.22), transparent 45%),
+                linear-gradient(135deg, #3b5bdb, #7048e8);
+    color: #ffffff; border-radius: 18px; padding: 1.6rem 1.8rem; margin-bottom: 1.6rem;
+    box-shadow: 0 10px 30px rgba(59, 91, 219, 0.22);
+  }
+  .gipp-hero h1 { margin: 0; font-size: 1.9rem; line-height: 1.2; letter-spacing: -0.02em; }
+  .gipp-hero p { margin: 0.5rem 0 0; opacity: 0.92; font-size: 1rem; }
+  .gipp-pasos { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 0 0 1.6rem; padding: 0; list-style: none; }
+  .gipp-pasos li {
+    flex: 1 1 150px; border: 1px solid rgba(128,128,128,0.25); border-radius: 12px;
+    padding: 0.6rem 0.8rem; font-size: 0.85rem; line-height: 1.3;
+  }
+  .gipp-pasos b { display: block; font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.6; }
+  .gipp-pasos .activo { border-color: var(--gipp-acento); background: rgba(59, 91, 219, 0.08); }
+  .gipp-pasos .activo b { color: var(--gipp-acento); opacity: 1; }
+  .gipp-pasos .hecho b { color: #2f9e44; opacity: 1; }
+  h2 { padding-bottom: 0.35rem; border-bottom: 1px solid rgba(128,128,128,0.2); }
+  div[data-testid="stForm"] { border: 1px solid rgba(128,128,128,0.25); border-radius: 14px; padding: 1rem 1.1rem; }
+</style>
+"""
+
+
+def encabezado(paso: int) -> None:
+    pasos = [
+        ("1", "Usuario de GitHub"),
+        ("2", "Repositorios y CV"),
+        ("3", "Revisión y plantilla"),
+        ("4", "Portafolio"),
+    ]
+    items = []
+    for numero, nombre in pasos:
+        clase = "activo" if int(numero) == paso else ("hecho" if int(numero) < paso else "")
+        items.append(f'<li class="{clase}"><b>Paso {numero}</b>{nombre}</li>')
+    st.markdown(
+        ESTILOS_APP
+        + '<div class="gipp-hero"><h1>GIPP</h1>'
+        "<p>Generador Inteligente de Portafolios Profesionales. Tú decides qué repos entran y qué se "
+        "publica; la IA solo redacta con lo que confirmas.</p></div>"
+        + '<ul class="gipp-pasos">' + "".join(items) + "</ul>",
+        unsafe_allow_html=True,
+    )
+
 
 
 
@@ -103,6 +149,7 @@ for clave in ("usuario", "repos", "perfil", "html", "sobre_mi", "alertas", "avis
     st.session_state.setdefault(clave, None)
 
 # ---------- 1. Usuario de GitHub ----------
+encabezado(1)
 st.header("1. Usuario de GitHub")
 with st.form("buscar"):
     entrada = st.text_input("Usuario o URL de GitHub", placeholder="https://github.com/usuario")
@@ -129,6 +176,7 @@ if repos is not None and not repos:
 
 # ---------- 2. Selección de repos y roles ----------
 if repos:
+    encabezado(2)
     st.header("2. Repositorios a incluir")
     sobre_mi = st.session_state.sobre_mi
     if sobre_mi:
@@ -218,6 +266,7 @@ if repos:
 
 # ---------- 3. Revisión humana del perfil ----------
 if st.session_state.perfil:
+    encabezado(3)
     st.header("3. Revisa y edita el perfil")
     if st.session_state.alertas:
         st.warning(
@@ -311,6 +360,7 @@ if st.session_state.perfil:
 
 # ---------- 4. Resultado ----------
 if st.session_state.html:
+    encabezado(4)
     st.header("4. Portafolio")
     for aviso in st.session_state.avisos or []:
         st.warning(limpiar_visible(aviso, 300))
