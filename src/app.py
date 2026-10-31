@@ -134,8 +134,6 @@ if repos:
     if sobre_mi:
         with st.expander("Tu README de perfil (presentación y herramientas)", expanded=True):
             vista_readme(sobre_mi)
-            with st.expander("Ver el texto original (Markdown)"):
-                st.text(sobre_mi)
         incluir_sobre_mi = st.checkbox(
             "Incluir mi README de perfil (presentación y herramientas)",
             value=True,
