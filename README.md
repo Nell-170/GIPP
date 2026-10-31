@@ -97,6 +97,10 @@ Los README y descripciones de GitHub son texto no confiable (pueden traer instru
 - Los READMEs se procesan en memoria, se recortan a 3000 caracteres (inicio y final, donde suelen ir los créditos) y no se guardan.
 - Solo se pide el README de los repos que seleccionas.
 
+## Modelos
+
+El Redactor y el Constructor usan el modelo definido en `ABACUS_MODEL` (por defecto `gpt-4o`) a través de Abacus.AI. El Extractor no usa ningún modelo: solo consulta la API pública de GitHub. Al ejecutar la app, la consola muestra qué modelo se pide y cuál respondió en cada paso.
+
 ## Estado
 
 Prototipo en desarrollo para el Entregable 1 del proyecto.

@@ -19,7 +19,7 @@ from github_extractor import (
     obtener_readme,
 )
 from portafolio import TEMAS
-from llm_agents import LLMError, construir_portafolio, redactar_perfil
+from llm_agents import LLMError, construir_portafolio, modelo_actual, redactar_perfil
 from portafolio import renderizar_portafolio
 from seguridad import (
     en_una_linea,
@@ -151,6 +151,7 @@ for clave in ("usuario", "repos", "perfil", "html", "sobre_mi", "alertas", "avis
 # ---------- 1. Usuario de GitHub ----------
 encabezado(1)
 st.header("1. Usuario de GitHub")
+print(f"[GIPP] Modelo configurado para Redactor y Constructor: «{modelo_actual()}»", flush=True)
 with st.form("buscar"):
     entrada = st.text_input("Usuario o URL de GitHub", placeholder="https://github.com/usuario")
     buscar = st.form_submit_button("Buscar repositorios")
