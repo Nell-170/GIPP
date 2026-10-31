@@ -370,6 +370,51 @@ body { font-family: Georgia, "Palatino Linotype", "Book Antiqua", serif; }
 .titulo-proyecto a { color: #2e1f14; }
 .saltar { color: #fffaf0; background: #5e3216; }
 """),
+    "tropical": ("Tropical (blanco, rojo y verde)", """
+:root {
+  --fondo: #ffffff; --tarjeta: #ffffff; --texto: #17301f; --atenuado: #5c7566;
+  --borde: #e3efe6; --acento: #e63946; --acento-2: #1b8a4b; --acento-suave: #eaf7ee;
+  --sombra: 0 2px 10px rgba(23, 48, 31, 0.07); --sombra-alta: 0 14px 32px rgba(230, 57, 70, 0.16);
+}
+@media (prefers-color-scheme: dark) {
+  :root { --fondo: #ffffff; --tarjeta: #ffffff; --texto: #17301f; --atenuado: #5c7566; --borde: #e3efe6; --acento: #e63946; --acento-2: #1b8a4b; --acento-suave: #eaf7ee; --sombra: 0 2px 10px rgba(23, 48, 31, 0.07); --sombra-alta: 0 14px 32px rgba(230, 57, 70, 0.16); }
+}
+body {
+  background:
+    radial-gradient(circle at 0% 0%, rgba(27, 138, 75, 0.10), transparent 38%),
+    radial-gradient(circle at 100% 12%, rgba(230, 57, 70, 0.09), transparent 36%),
+    #ffffff;
+  background-attachment: fixed;
+}
+.banda {
+  background:
+    radial-gradient(circle at 85% 20%, rgba(255, 255, 255, 0.22) 0 90px, transparent 91px),
+    radial-gradient(circle at 10% 90%, rgba(255, 255, 255, 0.16) 0 60px, transparent 61px),
+    linear-gradient(120deg, #e63946 0%, #f26b4f 48%, #1b8a4b 100%);
+  color: #ffffff;
+  border-radius: 0 0 40px 40px;
+  padding: 3.5rem 0 5.5rem;
+}
+.avatar { background: #ffffff; color: #e63946; border: 4px solid rgba(255, 255, 255, 0.65); }
+.hero h1 { letter-spacing: -0.02em; }
+.enlace-github a { background: rgba(255, 255, 255, 0.18); border-color: #ffffff; }
+.enlace-github a:hover { background: #ffffff; color: #e63946; }
+.metricas li { border-top: 4px solid #1b8a4b; }
+.metricas li:nth-child(2n) { border-top-color: #e63946; }
+.metricas strong { color: #e63946; }
+.menu a { background: var(--acento-suave); color: #1b8a4b; }
+.menu a:hover { background: #1b8a4b; color: #ffffff; }
+.seccion h2::before { background: linear-gradient(#e63946 0 50%, #1b8a4b 50% 100%); }
+.tarjeta { border-radius: 18px; border-color: var(--borde); }
+.tarjeta::before { background: linear-gradient(90deg, #e63946, #f4a261 50%, #1b8a4b); }
+.tarjeta:hover { border-color: #e63946; }
+.chips li { background: #ffffff; border-color: var(--borde); }
+.chips li:nth-child(3n+1) { border-color: rgba(230, 57, 70, 0.45); }
+.chips li:nth-child(3n+2) { border-color: rgba(27, 138, 75, 0.45); }
+.boton-contacto { color: #1b8a4b; }
+.boton-contacto:hover { background: var(--acento-suave); }
+.saltar { background: #e63946; color: #ffffff; }
+"""),
 }
 
 PLANTILLA_HTML = """<!DOCTYPE html>
