@@ -20,6 +20,7 @@ from seguridad import (
     NOTA_MAX_CHARS,
     README_MAX_CHARS,
     README_DESCARGA_MAX,
+    CV_MAX_CHARS,
     aparece_en,
     detectar_inyeccion,
     en_una_linea,
@@ -91,6 +92,10 @@ SYSTEM_REDACTOR = (
     "partes si la nota lo dice. Prohibido 'hice todo', 'yo solo', 'desarrollé el proyecto completo' "
     "o equivalentes en proyectos de equipo. Solo si todos los datos apuntan a una única persona "
     "puedes usar 'desarrollé'. Ante la duda, usa el verbo neutro 'participé'. "
+    "CURRÍCULUM: si se incluye un CV, puedes usar su experiencia, educación y tecnologías para "
+    "contextualizar el perfil, pero solo lo que el CV diga literalmente. No completes fechas, "
+    "empresas ni títulos que no aparezcan. Si el CV y los repos se contradicen, prioriza los repos "
+    "para lo técnico y no inventes una explicación. "
     "REGLA CRÍTICA: no inventes tecnologías, métricas, responsabilidades ni logros que no aparezcan "
     "en los datos proporcionados. Si un proyecto no tiene nota del usuario, describe SOLO lo que el "
     "README afirma literalmente, sin inferir el rol. No menciones frases como 'sin nota'. "
@@ -135,11 +140,15 @@ def _chat(system: str, user: str, temperature: float) -> str:
 
 
 def redactar_perfil(
-    usuario: str, repos_elegidos: list[dict], sobre_mi: str | None = None
+    usuario: str,
+    repos_elegidos: list[dict],
+    sobre_mi: str | None = None,
+    cv: str | None = None,
 ) -> tuple[str, list[str]]:
     """Agente Redactor. Devuelve (perfil, alertas de seguridad para mostrar a la persona).
 
     `sobre_mi` es el README del perfil (escrito por la propia persona), opcional.
+    `cv` es el texto de su currículum, opcional.
     """
     if not repos_elegidos:
         raise LLMError("No hay repositorios seleccionados.")
@@ -181,6 +190,15 @@ def redactar_perfil(
             "\n\nREADME del perfil que la persona escribió en GitHub "
             "(puede incluir su presentación y las herramientas que usa):\n"
             + marcar_no_confiable("README de perfil", presentacion)
+        )
+    if cv:
+        for señal in detectar_inyeccion(cv):
+            alertas.append(f"En tu CV: {señal}.")
+        curriculum = recortar_extremos(sanitizar(cv, CV_MAX_CHARS * 2), CV_MAX_CHARS)
+        fuentes.append(curriculum)
+        user += (
+            "\n\nCurrículum que la persona subió (experiencia, educación y tecnologías que declara):\n"
+            + marcar_no_confiable("CV", curriculum)
         )
     user += (
         "\n\nTarea: escribe un perfil profesional en español, en primera persona (máximo 250 palabras). "

@@ -21,7 +21,7 @@ from github_extractor import (
 from portafolio import TEMAS
 from llm_agents import LLMError, construir_portafolio, redactar_perfil
 from portafolio import renderizar_portafolio
-from seguridad import en_una_linea, limpiar_visible, validar_contacto
+from seguridad import en_una_linea, limpiar_visible, texto_de_cv, validar_contacto
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
@@ -95,6 +95,31 @@ if repos:
     else:
         sobre_mi = None
 
+    st.subheader("Currículum (opcional)")
+    st.caption(
+        "Si subes tu CV (PDF, DOCX, TXT o MD), el modelo lo usa como contexto para redactar. "
+        "Se procesa en memoria y no se guarda."
+    )
+    archivo_cv = st.file_uploader("Sube tu CV", type=["pdf", "docx", "txt", "md"], key="archivo_cv")
+    cv_texto = st.session_state.get("cv_texto")
+    if archivo_cv is not None:
+        try:
+            cv_texto = texto_de_cv(archivo_cv.name, archivo_cv.getvalue())
+            st.session_state.cv_texto = cv_texto
+            st.session_state.cv_nombre = archivo_cv.name
+        except ValueError as exc:
+            cv_texto = None
+            st.session_state.cv_texto = None
+            st.error(str(exc))
+    if cv_texto:
+        st.success(f"CV leído: {st.session_state.get('cv_nombre', 'archivo')} ({len(cv_texto)} caracteres).")
+        with st.expander("Ver el texto que se enviará al modelo"):
+            st.text(cv_texto[:4000])
+        if not st.checkbox("Incluir mi CV al redactar el perfil", value=True, key="incluir_cv"):
+            cv_texto = None
+    else:
+        cv_texto = None
+
     with st.form("seleccion"):
         for i, r in enumerate(repos):
             st.checkbox(f"**{sin_markdown(r['name'])}** · {sin_markdown(r['language'] or 'sin lenguaje')}", key=f"inc_{i}")
@@ -122,7 +147,9 @@ if repos:
                         elegido["colaboradores"] = obtener_colaboradores(
                             st.session_state.usuario, elegido["name"]
                         )
-                    perfil, alertas = redactar_perfil(st.session_state.usuario, elegidos, sobre_mi)
+                    perfil, alertas = redactar_perfil(
+                        st.session_state.usuario, elegidos, sobre_mi, cv_texto
+                    )
                 st.session_state.sobre_mi_usado = sobre_mi
                 st.session_state.perfil = perfil
                 st.session_state.alertas = alertas

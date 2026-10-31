@@ -9,6 +9,8 @@ import re
 
 README_MAX_CHARS = 3000
 README_DESCARGA_MAX = 8000
+CV_MAX_CHARS = 4000
+CV_ARCHIVO_MAX_BYTES = 5 * 1024 * 1024
 NOTA_MAX_CHARS = 300
 CAMPO_MAX_CHARS = 200
 
@@ -141,6 +143,48 @@ def validar_contacto(correo: str | None, linkedin: str | None) -> tuple[dict[str
         else:
             errores.append("El enlace de LinkedIn debe ser de la forma https://www.linkedin.com/in/tu-usuario.")
     return datos, errores
+
+
+def texto_de_cv(nombre: str, contenido: bytes) -> str:
+    """Extrae el texto de un CV en PDF, DOCX o TXT. Lanza ValueError con un mensaje para la persona."""
+    nombre = (nombre or "").lower()
+    if len(contenido) > CV_ARCHIVO_MAX_BYTES:
+        raise ValueError("El archivo supera los 5 MB. Sube una versión más liviana.")
+    if nombre.endswith(".pdf"):
+        import pymupdf
+
+        try:
+            with pymupdf.open(stream=contenido, filetype="pdf") as documento:
+                if documento.needs_pass:
+                    raise ValueError("El PDF está protegido con contraseña. Súbelo sin contraseña.")
+                texto = "\n".join(pagina.get_text() for pagina in documento)
+        except ValueError:
+            raise
+        except Exception as exc:
+            raise ValueError("No se pudo leer el PDF. Prueba con otro archivo.") from exc
+    elif nombre.endswith(".docx"):
+        import io
+
+        try:
+            import docx
+
+            documento = docx.Document(io.BytesIO(contenido))
+        except Exception as exc:
+            raise ValueError("No se pudo leer el DOCX. Prueba con otro archivo.") from exc
+        partes = [p.text for p in documento.paragraphs]
+        for tabla in documento.tables:
+            for fila in tabla.rows:
+                partes.append(" | ".join(celda.text for celda in fila.cells))
+        texto = "\n".join(partes)
+    elif nombre.endswith((".txt", ".md")):
+        texto = contenido.decode("utf-8", errors="replace")
+    elif nombre.endswith(".doc"):
+        raise ValueError("El formato .doc antiguo no se puede leer. Guárdalo como PDF o DOCX.")
+    else:
+        raise ValueError("Formato no admitido. Sube un PDF, DOCX, TXT o MD.")
+    if not sanitizar(texto, 1).strip():
+        raise ValueError("El archivo no tiene texto legible (¿es un PDF escaneado como imagen?).")
+    return texto
 
 
 def en_una_linea(texto: str | None, max_chars: int) -> str:
