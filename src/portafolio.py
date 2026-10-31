@@ -123,6 +123,7 @@ a:hover { text-decoration: underline; }
   -webkit-hyphens: auto; overflow-wrap: break-word;
 }
 .sobre-mi p::after { content: ""; display: inline-block; width: 100%; }
+.sobre-mi p:last-child, .sobre-mi p:has(+ p) { text-align: left; }
 .sobre-mi p:first-of-type { font-size: 1.15rem; }
 .sobre-mi p:last-child { margin-bottom: 0; }
 
