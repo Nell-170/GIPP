@@ -151,7 +151,7 @@ a:hover { text-decoration: underline; }
 }
 .tarjeta::before {
   content: ""; position: absolute; inset: 0 0 auto 0; height: 4px;
-  background: linear-gradient(90deg, var(--acento), var(--acento-2));
+  background: linear-gradient(90deg, var(--acento), var(--acento-2), var(--acento));
 }
 .tarjeta:hover { transform: translateY(-3px); box-shadow: var(--sombra-alta); border-color: var(--acento); }
 
@@ -192,12 +192,61 @@ footer p { margin: 0; }
   .hero h1 { font-size: 1.85rem; }
 }
 
+/* --- Animaciones (solo CSS, sin scripts) --- */
+@keyframes gipp-aparecer {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes gipp-flotar {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes gipp-brillo {
+  from { background-position: 0% 50%; }
+  to { background-position: 200% 50%; }
+}
+@keyframes gipp-latido {
+  0%, 100% { box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18); }
+  50% { box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3); }
+}
+
+.hero { animation: gipp-aparecer 0.6s ease-out both; }
+.avatar { animation: gipp-aparecer 0.6s ease-out both, gipp-latido 4s ease-in-out 1s infinite; }
+.metricas li { animation: gipp-aparecer 0.5s ease-out both; }
+.metricas li:nth-child(2) { animation-delay: 0.08s; }
+.metricas li:nth-child(3) { animation-delay: 0.16s; }
+.menu li { animation: gipp-aparecer 0.5s ease-out both; }
+.menu li:nth-child(2) { animation-delay: 0.05s; }
+.menu li:nth-child(3) { animation-delay: 0.1s; }
+.menu li:nth-child(4) { animation-delay: 0.15s; }
+.tarjeta { animation: gipp-aparecer 0.5s ease-out both; }
+.tarjeta:nth-child(2) { animation-delay: 0.07s; }
+.tarjeta:nth-child(3) { animation-delay: 0.14s; }
+.tarjeta:nth-child(4) { animation-delay: 0.21s; }
+.tarjeta:nth-child(5) { animation-delay: 0.28s; }
+.tarjeta:nth-child(6) { animation-delay: 0.35s; }
+.chips li { animation: gipp-aparecer 0.4s ease-out both; }
+.chips li:nth-child(2n) { animation-delay: 0.04s; }
+.chips li:nth-child(3n) { animation-delay: 0.08s; }
+.tarjeta::before {
+  background-size: 200% 100%;
+  animation: gipp-brillo 6s linear infinite;
+}
+.boton-contacto { transition: background 0.15s ease, transform 0.15s ease; }
+.boton-contacto:hover { transform: translateY(-2px); }
+.seccion h2::before { transition: transform 0.2s ease; }
+.seccion h2:hover::before { transform: scaleY(1.15); }
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .saltar, .tarjeta, .chips li, a { transition: none; }
+  .saltar, .tarjeta, .chips li, a, .boton-contacto, .seccion h2::before { transition: none; }
+  .hero, .avatar, .metricas li, .menu li, .tarjeta, .chips li, .tarjeta::before {
+    animation: none !important;
+  }
 }
 
 @media print {
+  * { animation: none !important; transition: none !important; }
   body { background: #ffffff; color: #000000; }
   .banda { background: #ffffff; color: #000000; padding: 0 0 1rem; border-bottom: 2px solid #333333; }
   .avatar { display: none; }
