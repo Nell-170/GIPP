@@ -117,7 +117,12 @@ a:hover { text-decoration: underline; }
   background: linear-gradient(var(--acento), var(--acento-2));
 }
 
-.sobre-mi p { max-width: 72ch; margin: 0 0 1rem; font-size: 1.04rem; }
+.sobre-mi p {
+  max-width: 72ch; margin: 0 0 1rem; font-size: 1.04rem;
+  text-align: justify; text-justify: inter-word; hyphens: auto;
+  -webkit-hyphens: auto; overflow-wrap: break-word;
+}
+.sobre-mi p::after { content: ""; display: inline-block; width: 100%; }
 .sobre-mi p:first-of-type { font-size: 1.15rem; }
 .sobre-mi p:last-child { margin-bottom: 0; }
 
