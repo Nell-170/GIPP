@@ -85,17 +85,6 @@ a:hover { text-decoration: underline; }
 .hero h1 { margin: 0; font-size: 2.4rem; line-height: 1.15; letter-spacing: -0.02em; overflow-wrap: break-word; }
 .titular { margin: 0.45rem 0 0; font-size: 1.15rem; opacity: 0.92; max-width: 52ch; }
 
-.enlace-github {
-  margin: 1rem 0 0;
-}
-.enlace-github a {
-  display: inline-block; padding: 0.4rem 1rem; border-radius: 999px;
-  background: rgba(255, 255, 255, 0.16); border: 1px solid rgba(255, 255, 255, 0.45);
-  color: #ffffff; font-size: 0.95rem; font-weight: 600;
-  transition: background 0.15s ease;
-}
-.enlace-github a:hover { background: rgba(255, 255, 255, 0.28); text-decoration: none; }
-
 .metricas {
   list-style: none; display: flex; gap: 1rem; flex-wrap: wrap;
   margin: -2.6rem 0 0; padding: 0; position: relative;
@@ -204,7 +193,6 @@ footer p { margin: 0; }
   body { background: #ffffff; color: #000000; }
   .banda { background: #ffffff; color: #000000; padding: 0 0 1rem; border-bottom: 2px solid #333333; }
   .avatar { display: none; }
-  .enlace-github a { color: #1f409e; background: none; border: 0; padding: 0; text-decoration: underline; }
   .metricas, .menu, .saltar { display: none; }
   .titular, .descripcion, .chip-lenguaje, footer { color: #333333; opacity: 1; }
   .tarjeta, .chips li { background: #ffffff; box-shadow: none; border-color: #c8ccd2; }
@@ -230,8 +218,6 @@ body { font-family: ui-monospace, "Cascadia Code", "SF Mono", Consolas, "Courier
 .hero h1::after { content: "_"; animation: parpadeo 1.1s steps(1) infinite; }
 @keyframes parpadeo { 50% { opacity: 0; } }
 .titular { color: var(--texto); }
-.enlace-github a { color: var(--acento); background: transparent; border: 1px solid var(--acento); border-radius: 6px; }
-.enlace-github a:hover { background: rgba(57, 255, 136, 0.12); }
 .metricas li, .tarjeta, .chips li { border-radius: 8px; }
 .metricas strong { color: var(--acento); }
 .menu a { border-radius: 6px; border: 1px solid var(--borde); background: transparent; color: var(--acento); }
@@ -259,7 +245,6 @@ body {
 .avatar { background: linear-gradient(135deg, #5eead4, #a78bfa); border: 0; color: #07101f; box-shadow: 0 0 40px rgba(94, 234, 212, 0.45); }
 .hero h1 { background: linear-gradient(90deg, #5eead4, #a78bfa); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .titular { color: var(--texto); }
-.enlace-github a { background: rgba(255, 255, 255, 0.08); border-color: rgba(94, 234, 212, 0.5); color: #5eead4; }
 .metricas li, .tarjeta, .chips li { backdrop-filter: blur(8px); }
 .tarjeta::before { background: linear-gradient(90deg, #5eead4, #a78bfa); }
 .titulo-proyecto a { color: var(--texto); }
@@ -304,8 +289,6 @@ body { font-family: Georgia, "Palatino Linotype", "Book Antiqua", serif; }
 .avatar { background: #111111; border: 0; color: #ffffff; box-shadow: none; }
 .hero h1 { font-weight: 800; letter-spacing: -0.03em; }
 .titular { opacity: 1; color: var(--atenuado); }
-.enlace-github a { background: transparent; border: 1px solid #111111; color: #111111; }
-.enlace-github a:hover { background: #111111; color: #ffffff; }
 .seccion h2::before { display: none; }
 .seccion h2 { border-bottom: 1px solid var(--borde); padding-bottom: 0.6rem; }
 .tarjeta { border-radius: 4px; box-shadow: none; }
@@ -329,7 +312,6 @@ body { font-family: "Segoe UI", Calibri, "Helvetica Neue", Arial, sans-serif; }
 .banda { background: linear-gradient(180deg, #1f3a5f, #28486f); border-bottom: 4px solid #c9a24d; padding: 3rem 0 5rem; }
 .avatar { border-radius: 8px; background: #c9a24d; border: 0; color: #1f3a5f; box-shadow: none; }
 .hero h1 { font-size: 2.2rem; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; }
-.enlace-github a { border-radius: 4px; border-color: #c9a24d; color: #f3dfb0; }
 .metricas li, .tarjeta, .chips li { border-radius: 4px; }
 .metricas strong { color: #1f3a5f; }
 .menu a { border-radius: 4px; background: #ffffff; border: 1px solid var(--borde); }
@@ -360,7 +342,6 @@ body { font-family: Georgia, "Palatino Linotype", "Book Antiqua", serif; }
 }
 .avatar { background: #f3ebdd; color: #5e3216; border: 4px solid #3e2410; }
 .hero h1 { letter-spacing: 0; text-shadow: 0 2px 3px rgba(0, 0, 0, 0.35); }
-.enlace-github a { background: rgba(255, 250, 240, 0.15); border-color: #f3ebdd; }
 .metricas strong { color: #5e3216; }
 .menu a { background: #5e3216; color: #fffaf0; border-radius: 4px; }
 .seccion h2::before { background: repeating-linear-gradient(90deg, #8a4b21 0 3px, #5e3216 3px 6px); width: 8px; border-radius: 1px; }
@@ -397,8 +378,6 @@ body {
 }
 .avatar { background: #ffffff; color: #e63946; border: 4px solid rgba(255, 255, 255, 0.65); }
 .hero h1 { letter-spacing: -0.02em; }
-.enlace-github a { background: rgba(255, 255, 255, 0.18); border-color: #ffffff; }
-.enlace-github a:hover { background: #ffffff; color: #e63946; }
 .metricas li { border-top: 4px solid #1b8a4b; }
 .metricas li:nth-child(2n) { border-top-color: #e63946; }
 .metricas strong { color: #e63946; }
@@ -438,7 +417,6 @@ PLANTILLA_HTML = """<!DOCTYPE html>
     <div class="hero-texto">
       <h1><NOMBRE></h1>
       <TITULAR>
-      <p class="enlace-github"><a href="<URL_USUARIO>"><USUARIO_TEXTO></a></p>
     </div>
   </div>
 </div>
@@ -612,8 +590,6 @@ def renderizar_portafolio(usuario: str, nombre: str, titular: str, resumen: str,
         .replace("<NOMBRE>", nombre_escapado)
         .replace("<TITULAR>", titular_html)
         .replace("<INICIALES>", html.escape(iniciales))
-        .replace("<URL_USUARIO>", html.escape("https://github.com/" + usuario))
-        .replace("<USUARIO_TEXTO>", html.escape("github.com/" + usuario))
         .replace("<METRICAS>", metricas_html)
         .replace("<MENU>", menu_html)
         .replace("<SECCIONES>", "".join(secciones))
