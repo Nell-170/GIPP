@@ -100,3 +100,7 @@ Los README y descripciones de GitHub son texto no confiable (pueden traer instru
 ## Estado
 
 Prototipo en desarrollo para el Entregable 1 del proyecto.
+
+## Declaratoria de uso de IA
+
+En este proyecto se utilizaron como asistentes (supervisados y constantemente evaluados) de desarrollo, depuración y documentación a los modelos Claude Sonnet 5.5 y DeepSeek V4.1 Flash.
