@@ -118,13 +118,24 @@ a:hover { text-decoration: underline; }
 }
 
 .sobre-mi p {
-  max-width: 72ch; margin: 0 0 1rem; font-size: 1.04rem;
-  text-align: justify; text-justify: inter-word; hyphens: auto;
-  -webkit-hyphens: auto; overflow-wrap: break-word;
+  max-width: 66ch;
+  margin: 0 0 1rem;
+  font-size: 1.04rem;
+  line-height: 1.75;
+
+  text-align: justify;
+  text-align-last: left;
+
+  text-justify: inter-word;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  hyphenate-limit-chars: 6 3 3;
+  overflow-wrap: break-word;
 }
-.sobre-mi p::after { content: ""; display: inline-block; width: 100%; }
-.sobre-mi p:last-child, .sobre-mi p:has(+ p) { text-align: left; }
-.sobre-mi p:first-of-type { font-size: 1.15rem; }
+
+.sobre-mi p:first-of-type {
+  font-size: 1.15rem;
+}
 .sobre-mi p:last-child { margin-bottom: 0; }
 
 .chips { list-style: none; display: flex; flex-wrap: wrap; gap: 0.55rem; margin: 0; padding: 0; }
