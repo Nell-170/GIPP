@@ -21,7 +21,13 @@ from github_extractor import (
 from portafolio import TEMAS
 from llm_agents import LLMError, construir_portafolio, redactar_perfil
 from portafolio import renderizar_portafolio
-from seguridad import en_una_linea, limpiar_visible, texto_de_cv, validar_contacto
+from seguridad import (
+    en_una_linea,
+    limpiar_visible,
+    markdown_a_html,
+    texto_de_cv,
+    validar_contacto,
+)
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
@@ -43,6 +49,48 @@ def vista_previa(documento, alto=430, escala=0.5):
         f'<iframe sandbox="" srcdoc="{marco}" scrolling="no" '
         f'style="width:{ancho}%;height:{int(alto / escala)}px;border:0;transform:scale({escala});'
         'transform-origin:0 0"></iframe></div>',
+        height=alto + 8,
+    )
+
+
+ESTILOS_README = """
+body { margin: 0; padding: 1rem 1.25rem; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.6; color: #1f2328; background: #ffffff; font-size: 15px; }
+h1, h2, h3 { line-height: 1.25; margin: 1.2rem 0 0.6rem; }
+h1 { font-size: 1.6rem; border-bottom: 1px solid #d8dee4; padding-bottom: 0.3rem; }
+h2 { font-size: 1.25rem; border-bottom: 1px solid #d8dee4; padding-bottom: 0.25rem; }
+h3 { font-size: 1.05rem; }
+p, li { overflow-wrap: anywhere; }
+ul, ol { padding-left: 1.4rem; }
+hr { border: 0; border-top: 1px solid #d8dee4; margin: 1.2rem 0; }
+code { background: #f0f2f4; padding: 0.1rem 0.3rem; border-radius: 4px; font-size: 0.9em; }
+pre { background: #f0f2f4; padding: 0.8rem; border-radius: 8px; overflow-x: auto; }
+pre code { background: none; padding: 0; }
+blockquote { margin: 0.8rem 0; padding: 0.2rem 1rem; border-left: 3px solid #d0d7de; color: #57606a; }
+a { color: #0969da; }
+.imagen { display: inline-block; padding: 0.1rem 0.5rem; margin: 0.1rem; border: 1px solid #d8dee4;
+  border-radius: 999px; font-size: 0.85em; color: #57606a; }
+@media (prefers-color-scheme: dark) {
+  body { color: #e6edf3; background: #0d1117; }
+  h1, h2, hr { border-color: #30363d; }
+  code, pre { background: #161b22; }
+  blockquote { border-color: #30363d; color: #8b949e; }
+  a { color: #58a6ff; }
+  .imagen { border-color: #30363d; color: #8b949e; }
+}
+"""
+
+
+def vista_readme(texto, alto=420):
+    documento = (
+        "<!DOCTYPE html><html lang=\"es\"><head><meta charset=\"utf-8\">"
+        "<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; "
+        "style-src 'unsafe-inline'; img-src data:\">"
+        f"<style>{ESTILOS_README}</style></head><body>{markdown_a_html(texto)}</body></html>"
+    )
+    components.html(
+        f'<iframe sandbox="" srcdoc="{html_lib.escape(documento, quote=True)}" '
+        f'style="width:100%;height:{alto}px;border:1px solid #8884;border-radius:10px;background:transparent"></iframe>',
         height=alto + 8,
     )
 
@@ -84,8 +132,10 @@ if repos:
     st.header("2. Repositorios a incluir")
     sobre_mi = st.session_state.sobre_mi
     if sobre_mi:
-        with st.expander("Tu README de perfil (presentación y herramientas)"):
-            st.text(sobre_mi)
+        with st.expander("Tu README de perfil (presentación y herramientas)", expanded=True):
+            vista_readme(sobre_mi)
+            with st.expander("Ver el texto original (Markdown)"):
+                st.text(sobre_mi)
         incluir_sobre_mi = st.checkbox(
             "Incluir mi README de perfil (presentación y herramientas)",
             value=True,

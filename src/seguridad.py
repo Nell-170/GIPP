@@ -6,6 +6,7 @@ al modelo. Este módulo lo limpia, lo marca como datos y detecta señales sospec
 Nada de aquí reemplaza la revisión humana: sirve para avisarle a la persona usuaria.
 """
 import re
+from html import escape as html_escape
 
 README_MAX_CHARS = 3000
 README_DESCARGA_MAX = 8000
@@ -185,6 +186,119 @@ def texto_de_cv(nombre: str, contenido: bytes) -> str:
     if not sanitizar(texto, 1).strip():
         raise ValueError("El archivo no tiene texto legible (¿es un PDF escaneado como imagen?).")
     return texto
+
+
+_MD_IMAGEN = re.compile(r"!\[([^\]]*)\]\(([^)\s]*)(?:\s+\"[^\"]*\")?\)")
+_MD_ENLACE = re.compile(r"\[([^\]]+)\]\(([^)\s]*)(?:\s+\"[^\"]*\")?\)")
+_MD_URL_SUELTA = re.compile(r"""(?<![\w"'=])(https?://[^\s<>()"']+)""")
+
+
+def _md_en_linea(texto: str) -> str:
+    """Formato en línea de Markdown a HTML, escapando todo el texto."""
+    t = html_escape(texto)
+    t = re.sub(r"`([^`]+)`", r"<code>\1</code>", t)
+    t = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", t)
+    t = re.sub(r"__([^_]+)__", r"<strong>\1</strong>", t)
+    t = re.sub(r"(?<![*\w])\*([^*\s][^*]*)\*(?![*\w])", r"<em>\1</em>", t)
+    t = re.sub(r"~~([^~]+)~~", r"<del>\1</del>", t)
+    return t
+
+
+def _md_enlace(url: str, etiqueta: str) -> str:
+    """Solo enlaces http(s) o correo; cualquier otro esquema se deja como texto."""
+    url = url.strip()
+    if re.fullmatch(r"""https?://[^\s<>"']+""", url):
+        return f'<a href="{html_escape(url)}" target="_blank" rel="noopener noreferrer">{etiqueta}</a>'
+    if re.fullmatch(_CORREO, url):
+        return f'<a href="mailto:{html_escape(url)}">{etiqueta}</a>'
+    return etiqueta
+
+
+def markdown_a_html(texto: str | None) -> str:
+    """Convierte un README de Markdown a HTML seguro: sin scripts, sin imágenes remotas,
+    sin HTML del original y sin enlaces que no sean http(s) o correo."""
+    if not texto:
+        return ""
+    lineas = sanitizar(texto, 20000).splitlines()
+    salida: list[str] = []
+    lista: list[str] | None = None
+    parrafo: list[str] = []
+    en_codigo = False
+    codigo: list[str] = []
+
+    def cerrar_parrafo() -> None:
+        if parrafo:
+            salida.append("<p>" + _md_en_linea(" ".join(parrafo)) + "</p>")
+            parrafo.clear()
+
+    def cerrar_lista() -> None:
+        nonlocal lista
+        if lista is not None:
+            salida.append(f"<{lista}>" + "".join(f"<li>{x}</li>" for x in lista_items) + f"</{lista}>")
+            lista = None
+            lista_items.clear()
+
+    lista_items: list[str] = []
+    for linea in lineas:
+        if linea.strip().startswith("```"):
+            cerrar_parrafo()
+            cerrar_lista()
+            if en_codigo:
+                salida.append("<pre><code>" + html_escape("\n".join(codigo)) + "</code></pre>")
+                codigo.clear()
+            en_codigo = not en_codigo
+            continue
+        if en_codigo:
+            codigo.append(linea)
+            continue
+        if not linea.strip():
+            cerrar_parrafo()
+            cerrar_lista()
+            continue
+        if re.fullmatch(r"\s{0,3}([-*_])(\s*\1){2,}\s*", linea):
+            cerrar_parrafo()
+            cerrar_lista()
+            salida.append("<hr>")
+            continue
+        titulo = re.match(r"\s{0,3}(#{1,6})\s+(.*)", linea)
+        if titulo:
+            cerrar_parrafo()
+            cerrar_lista()
+            nivel = len(titulo.group(1))
+            salida.append(f"<h{nivel}>{_md_en_linea(titulo.group(2).strip())}</h{nivel}>")
+            continue
+        vineta = re.match(r"\s{0,3}[-*+]\s+(.*)", linea)
+        numerada = re.match(r"\s{0,3}\d+[.)]\s+(.*)", linea)
+        if vineta or numerada:
+            cerrar_parrafo()
+            tipo = "ol" if numerada else "ul"
+            if lista != tipo:
+                cerrar_lista()
+                lista = tipo
+            lista_items.append(_md_en_linea((vineta or numerada).group(1)))
+            continue
+        cita = re.match(r"\s{0,3}>\s?(.*)", linea)
+        if cita:
+            cerrar_parrafo()
+            cerrar_lista()
+            salida.append("<blockquote>" + _md_en_linea(cita.group(1)) + "</blockquote>")
+            continue
+        parrafo.append(linea.strip())
+    if en_codigo and codigo:
+        salida.append("<pre><code>" + html_escape("\n".join(codigo)) + "</code></pre>")
+    cerrar_parrafo()
+    cerrar_lista()
+    html = "\n".join(salida)
+    # imágenes: solo se muestra el texto alternativo (no se cargan recursos externos)
+    html = _MD_IMAGEN.sub(lambda m: f'<span class="imagen">{_md_en_linea(m.group(1))}</span>', html)
+    html = _MD_ENLACE.sub(
+        lambda m: _md_enlace(m.group(2), _md_en_linea(m.group(1)))
+        if "(" not in m.group(2) and ")" not in m.group(2)
+        else m.group(0),
+        html,
+    )
+    html = _MD_URL_SUELTA.sub(lambda m: _md_enlace(m.group(1), html_escape(m.group(1))), html)
+    return html
 
 
 def en_una_linea(texto: str | None, max_chars: int) -> str:
