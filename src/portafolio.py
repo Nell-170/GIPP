@@ -791,7 +791,8 @@ def renderizar_portafolio(usuario: str, nombre: str, titular: str, resumen: str,
         script_mapa = SCRIPT_MAPA
     else:
         script_mapa = ""
-    hash_mapa = base64.b64encode(hashlib.sha256(script_mapa.encode("utf-8")).digest()).decode("ascii")
+    contenido_script = script_mapa.removeprefix("<script>").removesuffix("</script>")
+    hash_mapa = base64.b64encode(hashlib.sha256(contenido_script.encode("utf-8")).digest()).decode("ascii")
 
     nombre_escapado = html.escape(nombre_final)
     titular_html = ""
