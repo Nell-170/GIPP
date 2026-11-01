@@ -109,33 +109,38 @@ a:hover { text-decoration: underline; }
 .menu a:hover { text-decoration: none; filter: brightness(0.96); }
 
 /* --- Mapa lateral: menú fijo a la izquierda que sigue el desplazamiento ---
-   Sin scripts: el resaltado lo hace :target (al pulsar un enlace) y, donde el navegador
-   lo soporta, scroll-state() marca la sección que está en pantalla. */
+   El resaltado de la sección visible lo pone el script del final (IntersectionObserver);
+   :target lo respalda cuando el navegador no ejecuta scripts. */
 .mapa {
-  position: fixed; top: 50%; left: 1rem; transform: translateY(-50%); z-index: 50;
+  position: fixed; top: 14rem; left: 1rem; z-index: 50;
+  width: 13.5rem; box-sizing: border-box;
   display: flex; flex-direction: column; gap: 0.15rem;
-  padding: 0.6rem 0.5rem; border-radius: 14px;
+  padding: 0.9rem 0.7rem; border-radius: 16px;
   background: var(--tarjeta); border: 1px solid var(--borde); box-shadow: var(--sombra);
 }
 .mapa-titulo {
-  margin: 0 0 0.35rem; padding: 0 0.5rem; font-size: 0.68rem; font-weight: 700;
+  margin: 0 0 0.5rem; padding: 0 0.6rem; font-size: 0.78rem; font-weight: 700;
   letter-spacing: 0.08em; text-transform: uppercase; color: var(--atenuado);
 }
-.mapa ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.1rem; }
+.mapa ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.15rem; }
 .mapa a {
-  position: relative; display: flex; align-items: center; gap: 0.5rem;
-  padding: 0.35rem 0.6rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600;
+  position: relative; display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.5rem 0.7rem; border-radius: 10px; font-size: 1rem; font-weight: 600;
   color: var(--atenuado); white-space: nowrap;
-  transition: color 0.15s ease, background 0.15s ease;
+  transition: color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
 }
 .mapa a::before {
-  content: ""; width: 7px; height: 7px; border-radius: 50%; flex: none;
+  content: ""; width: 9px; height: 9px; border-radius: 50%; flex: none;
   background: var(--borde); transition: background 0.15s ease, transform 0.15s ease;
 }
 .mapa a:hover { color: var(--acento); background: var(--acento-suave); text-decoration: none; }
 .mapa a:hover::before { background: var(--acento); }
-.mapa a.activo { color: var(--acento); background: var(--acento-suave); }
+.mapa a.activo {
+  color: var(--acento); background: var(--acento-suave);
+  box-shadow: inset 0 0 0 1px var(--acento);
+}
 .mapa a.activo::before { background: var(--acento); transform: scale(1.35); }
+.mapa a:target { color: var(--acento); background: var(--acento-suave); }
 .seccion:target > h2 { color: var(--acento); }
 
 .seccion { padding: 2.4rem 0 0.4rem; scroll-margin-top: 1rem; }
