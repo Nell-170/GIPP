@@ -1,6 +1,7 @@
 """Renderiza el portafolio HTML a partir de datos ya validados."""
 
 import base64
+import hashlib
 import html
 import re
 
@@ -107,6 +108,36 @@ a:hover { text-decoration: underline; }
 }
 .menu a:hover { text-decoration: none; filter: brightness(0.96); }
 
+/* --- Mapa lateral: menú fijo a la izquierda que sigue el desplazamiento ---
+   Sin scripts: el resaltado lo hace :target (al pulsar un enlace) y, donde el navegador
+   lo soporta, scroll-state() marca la sección que está en pantalla. */
+.mapa {
+  position: fixed; top: 50%; left: 1rem; transform: translateY(-50%); z-index: 50;
+  display: flex; flex-direction: column; gap: 0.15rem;
+  padding: 0.6rem 0.5rem; border-radius: 14px;
+  background: var(--tarjeta); border: 1px solid var(--borde); box-shadow: var(--sombra);
+}
+.mapa-titulo {
+  margin: 0 0 0.35rem; padding: 0 0.5rem; font-size: 0.68rem; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--atenuado);
+}
+.mapa ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.1rem; }
+.mapa a {
+  position: relative; display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.35rem 0.6rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600;
+  color: var(--atenuado); white-space: nowrap;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.mapa a::before {
+  content: ""; width: 7px; height: 7px; border-radius: 50%; flex: none;
+  background: var(--borde); transition: background 0.15s ease, transform 0.15s ease;
+}
+.mapa a:hover { color: var(--acento); background: var(--acento-suave); text-decoration: none; }
+.mapa a:hover::before { background: var(--acento); }
+.mapa a.activo { color: var(--acento); background: var(--acento-suave); }
+.mapa a.activo::before { background: var(--acento); transform: scale(1.35); }
+.seccion:target > h2 { color: var(--acento); }
+
 .seccion { padding: 2.4rem 0 0.4rem; scroll-margin-top: 1rem; }
 .seccion h2 {
   display: flex; align-items: center; gap: 0.6rem;
@@ -194,6 +225,10 @@ footer {
   font-size: 0.85rem; padding: 1.4rem 0 2.8rem;
 }
 footer p { margin: 0; }
+
+@media (max-width: 1180px) {
+  .mapa { display: none; }
+}
 
 @media (max-width: 600px) {
   .contenedor { padding-left: 1rem; padding-right: 1rem; }
@@ -295,7 +330,7 @@ footer p { margin: 0; }
   body { background: #ffffff; color: #000000; }
   .banda { background: #ffffff; color: #000000; padding: 0 0 1rem; border-bottom: 2px solid #333333; }
   .avatar { display: none; }
-  .metricas, .menu, .saltar { display: none; }
+  .metricas, .menu, .mapa, .saltar { display: none; }
   .titular, .descripcion, .chip-lenguaje, footer { color: #333333; opacity: 1; }
   .tarjeta, .chips li { background: #ffffff; box-shadow: none; border-color: #c8ccd2; }
   .tarjeta { break-inside: avoid; }
@@ -501,7 +536,7 @@ body {
 PLANTILLA_HTML = """<!DOCTYPE html>
 <html lang="es">
 <head>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'sha256-<HASH_MAPA>'; base-uri 'none'; form-action 'none'">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
@@ -526,6 +561,7 @@ PLANTILLA_HTML = """<!DOCTYPE html>
 <div class="contenedor">
 <METRICAS>
 <MENU>
+<MAPA>
 <main id="contenido">
 <SECCIONES>
 </main>
@@ -533,9 +569,38 @@ PLANTILLA_HTML = """<!DOCTYPE html>
   <p>Portafolio generado con GIPP. El texto fue revisado y aprobado por su autor.</p>
 </footer>
 </div>
+<SCRIPT_MAPA>
 </body>
 </html>
 """
+
+# Script del mapa lateral. Es fijo (no depende de los datos) y la CSP lo autoriza por
+# hash: si cambia una sola letra, el navegador lo bloquea. Solo lee el documento y
+# marca el enlace de la sección visible; no escribe HTML ni carga nada externo.
+SCRIPT_MAPA = """<script>
+(function () {
+  var enlaces = document.querySelectorAll('.mapa a[href^="#"]');
+  if (!enlaces.length || !('IntersectionObserver' in window)) { return; }
+  var visibles = {};
+  var observador = new IntersectionObserver(function (entradas) {
+    entradas.forEach(function (entrada) {
+      visibles[entrada.target.id] = entrada.isIntersecting ? entrada.intersectionRatio : 0;
+    });
+    var mejor = null;
+    var maximo = 0;
+    Object.keys(visibles).forEach(function (id) {
+      if (visibles[id] > maximo) { maximo = visibles[id]; mejor = id; }
+    });
+    enlaces.forEach(function (enlace) {
+      enlace.classList.toggle('activo', mejor !== null && enlace.getAttribute('href') === '#' + mejor);
+    });
+  }, { threshold: [0, 0.15, 0.35, 0.6, 0.85], rootMargin: '-10% 0px -45% 0px' });
+  enlaces.forEach(function (enlace) {
+    var seccion = document.getElementById(enlace.getAttribute('href').slice(1));
+    if (seccion) { observador.observe(seccion); }
+  });
+})();
+</script>"""
 
 
 def renderizar_portafolio(usuario: str, nombre: str, titular: str, resumen: str,
@@ -689,6 +754,19 @@ def renderizar_portafolio(usuario: str, nombre: str, titular: str, resumen: str,
             f'<li><a href="#{ancla}">{rotulo}</a></li>' for _, (ancla, rotulo) in enlaces
         ) + "</ul></nav>"
 
+    mapa_html = ""
+    if enlaces:
+        mapa_html = (
+            '<nav class="mapa" aria-label="Mapa del portafolio">'
+            '<p class="mapa-titulo">En esta página</p><ul>'
+            + "".join(f'<li><a href="#{ancla}">{rotulo}</a></li>' for _, (ancla, rotulo) in enlaces)
+            + "</ul></nav>"
+        )
+        script_mapa = SCRIPT_MAPA
+    else:
+        script_mapa = ""
+    hash_mapa = base64.b64encode(hashlib.sha256(script_mapa.encode("utf-8")).digest()).decode("ascii")
+
     nombre_escapado = html.escape(nombre_final)
     titular_html = ""
     if titular:
@@ -702,5 +780,8 @@ def renderizar_portafolio(usuario: str, nombre: str, titular: str, resumen: str,
         .replace("<INICIALES>", html.escape(iniciales))
         .replace("<METRICAS>", metricas_html)
         .replace("<MENU>", menu_html)
+        .replace("<MAPA>", mapa_html)
+        .replace("<SCRIPT_MAPA>", script_mapa)
+        .replace("<HASH_MAPA>", hash_mapa)
         .replace("<SECCIONES>", "".join(secciones))
     )
