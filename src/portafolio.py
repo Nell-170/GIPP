@@ -151,6 +151,23 @@ a:hover { text-decoration: underline; }
 .mapa a:target::after { transform: scaleX(1); }
 .seccion:target > h2 { color: var(--acento); }
 
+/* --- Trompo de madera: baja por el mapa lateral según la sección visible --- */
+.trompo {
+  position: relative; height: 4.6rem; margin-top: 0.5rem;
+  border-top: 1px dashed var(--borde);
+}
+.trompo svg {
+  position: absolute; left: 50%; top: 0; margin-left: -17px;
+  transform: translateY(calc(var(--trompo, 0) * (4.6rem - 68px)));
+  transition: transform 0.55s cubic-bezier(0.34, 1.4, 0.64, 1);
+  animation: gipp-girar 1.6s linear infinite;
+  filter: drop-shadow(0 3px 3px rgba(70, 40, 15, 0.35));
+}
+@keyframes gipp-girar {
+  from { rotate: y 0deg; }
+  to { rotate: y 360deg; }
+}
+
 .seccion { padding: 2.4rem 0 0.4rem; scroll-margin-top: 1rem; }
 .seccion h2 {
   display: flex; align-items: center; gap: 0.6rem;
@@ -331,8 +348,9 @@ footer p { margin: 0; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .saltar, .tarjeta, .chips li, a, .boton-contacto, .seccion h2::before,
-  .titulo-proyecto a::after, .ver a::after, .mapa a::after { transition: none; }
-  .hero, .avatar, .metricas li, .menu li, .tarjeta, .chips li, .tarjeta::before, .seccion {
+  .titulo-proyecto a::after, .ver a::after, .mapa a::after, .trompo svg { transition: none; }
+  .hero, .avatar, .metricas li, .menu li, .tarjeta, .chips li, .tarjeta::before, .seccion,
+  .trompo svg {
     animation: none !important;
   }
 }
@@ -618,6 +636,12 @@ SCRIPT_MAPA = """<script>
     enlaces.forEach(function (enlace) {
       enlace.classList.toggle('activo', enlace.getAttribute('href') === '#' + actual.id);
     });
+    var trompo = document.querySelector('.trompo');
+    if (trompo) {
+      var indice = secciones.indexOf(actual);
+      var total = secciones.length;
+      trompo.style.setProperty('--trompo', total > 1 ? indice / (total - 1) : 0);
+    }
   }
   function programar() {
     if (!pendiente) { pendiente = true; window.requestAnimationFrame(marcar); }
@@ -627,6 +651,28 @@ SCRIPT_MAPA = """<script>
   marcar();
 })();
 </script>"""
+
+
+# Trompo de madera dibujado en SVG (sin imágenes externas): solo aparece en la plantilla
+# "madera" y se mueve por el mapa lateral según la sección visible (ver SCRIPT_MAPA).
+TROMPO_HTML = """<div class="trompo" aria-hidden="true"><svg viewBox="0 0 60 120" width="34" height="68">
+<defs>
+<linearGradient id="gipp-madera" x1="0" y1="0" x2="1" y2="0">
+<stop offset="0" stop-color="#5e3216"/><stop offset="0.35" stop-color="#a86a3a"/>
+<stop offset="0.6" stop-color="#8a4b21"/><stop offset="1" stop-color="#4a2710"/>
+</linearGradient>
+<linearGradient id="gipp-cuerda" x1="0" y1="0" x2="1" y2="0">
+<stop offset="0" stop-color="#cdbb9c"/><stop offset="0.4" stop-color="#f3ebdd"/>
+<stop offset="1" stop-color="#b9a583"/>
+</linearGradient>
+</defs>
+<path d="M30 4 C46 4 54 16 54 30 C54 48 42 62 30 62 C18 62 6 48 6 30 C6 16 14 4 30 4 Z" fill="url(#gipp-madera)"/>
+<path d="M9 24 C18 19 42 19 51 24" fill="none" stroke="#2b1608" stroke-width="3"/>
+<path d="M7 34 C17 29 43 29 53 34" fill="none" stroke="#f3ebdd" stroke-width="1.2" opacity="0.6"/>
+<path d="M30 62 C42 62 46 74 44 84 C42 96 34 104 30 108 C26 104 18 96 16 84 C14 74 18 62 30 62 Z" fill="url(#gipp-cuerda)"/>
+<path d="M18 72 L42 78 M17 80 L43 86 M19 90 L41 94" stroke="#a8926f" stroke-width="1.1" opacity="0.7"/>
+<path d="M30 108 L30 118" stroke="#6b6b6b" stroke-width="2.6" stroke-linecap="round"/>
+</svg></div>"""
 
 
 def renderizar_portafolio(usuario: str, nombre: str, titular: str, resumen: str,
@@ -786,7 +832,9 @@ def renderizar_portafolio(usuario: str, nombre: str, titular: str, resumen: str,
             '<nav class="mapa" aria-label="Mapa del portafolio">'
             '<p class="mapa-titulo">En esta página</p><ul>'
             + "".join(f'<li><a href="#{ancla}">{rotulo}</a></li>' for _, (ancla, rotulo) in enlaces)
-            + "</ul></nav>"
+            + "</ul>"
+            + (TROMPO_HTML if plantilla == "madera" else "")
+            + "</nav>"
         )
         script_mapa = SCRIPT_MAPA
     else:
