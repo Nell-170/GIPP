@@ -135,12 +135,18 @@ a:hover { text-decoration: underline; }
 }
 .mapa a:hover { color: var(--acento); background: var(--acento-suave); text-decoration: none; }
 .mapa a:hover::before { background: var(--acento); }
+/* Sección en la que estás: barra sólida a la izquierda, fondo del acento y texto claro.
+   Es distinto del hover (fondo suave y texto en acento), así no se confunden. */
 .mapa a.activo {
-  color: var(--acento); background: var(--acento-suave);
-  box-shadow: inset 0 0 0 1px var(--acento);
+  color: var(--tarjeta); background: var(--acento); font-weight: 700;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
 }
-.mapa a.activo::before { background: var(--acento); transform: scale(1.35); }
-.mapa a:target { color: var(--acento); background: var(--acento-suave); }
+.mapa a.activo::before { background: var(--tarjeta); transform: scale(1.25); }
+.mapa a.activo::after {
+  content: ""; position: absolute; left: -0.7rem; top: 0.35rem; bottom: 0.35rem;
+  width: 4px; border-radius: 0 4px 4px 0; background: var(--acento);
+}
+.mapa a:target { color: var(--tarjeta); background: var(--acento); }
 .seccion:target > h2 { color: var(--acento); }
 
 .seccion { padding: 2.4rem 0 0.4rem; scroll-margin-top: 1rem; }
