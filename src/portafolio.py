@@ -3,6 +3,7 @@
 import base64
 import hashlib
 import html
+import math
 import re
 
 from seguridad import cv_incrustable, validar_contacto
@@ -160,26 +161,41 @@ a:hover { text-decoration: underline; }
   width: max(0px, calc((100vw - 920px) / 2 - 1.5rem));
   pointer-events: none;
 }
+.companero {
+  /* Recorrido del dibujito: el rastro y el objeto usan los MISMOS valores, así no se separan. */
+  --rango-x: max(0px, calc((100vw - 920px) / 2 - 3.5rem - 80px));
+  --rango-y: max(0px, calc(100vh - 14rem));
+  --punta-y: 82px; /* altura de la punta del dibujito (la plantilla puede cambiarla) */
+}
 .companero svg {
   display: block; width: 80px; height: 96px; overflow: visible;
   filter: drop-shadow(0 2px 2px rgba(70, 40, 15, 0.16));
 }
+/* Rastro: el objeto lo va dejando detrás de su punta. Es el mismo zigzag que recorre el
+   objeto, dibujado en un cuadro de 0 a 1 que se estira al tamaño real del recorrido, y se
+   revela de arriba hacia abajo hasta la altura exacta donde está el objeto. */
 .companero .companero-cuerda {
-  position: absolute; top: 6rem; right: 1rem; width: 80px;
-  height: max(0px, calc(100vh - 14rem));
+  position: absolute;
+  top: calc(6rem + var(--punta-y));
+  right: calc(1rem + 40px);
+  width: var(--rango-x);
+  height: var(--rango-y);
+  filter: none;
+  clip-path: inset(-6px -10px calc((1 - var(--trompo, 0)) * 100%) -10px);
 }
 .companero-cuerda path {
   fill: none;
   stroke: var(--companero-cuerda, #b08a5c);
   stroke-width: 3;
-  stroke-dasharray: 1;
-  stroke-dashoffset: calc(1 - var(--trompo, 0));
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
 }
 .companero-movimiento {
   position: absolute; top: 6rem; right: 1rem;
   transform: translate(
-    calc(var(--trompo-x, 0) * max(0px, (100vw - 920px) / 2 - 3.5rem - 80px)),
-    calc(var(--trompo, 0) * max(0px, 100vh - 14rem))
+    calc(var(--trompo-x, 0) * var(--rango-x)),
+    calc(var(--trompo, 0) * var(--rango-y))
   );
 }
 .companero-cuerpo {
@@ -801,15 +817,33 @@ COMPANEROS = {
 }
 
 
+# El rastro repite el movimiento que calcula SCRIPT_MAPA: x = (1 + cos(fase)) / 2 con
+# fase = progreso * 6π (tres vaivenes) y y = progreso. Si cambias el movimiento del script,
+# cambia aquí VUELTAS y el rastro seguirá al objeto.
+VUELTAS = 3
+_PUNTOS = 240
+RASTRO = "M" + " L".join(
+    f"{(1 + math.cos(2 * math.pi * VUELTAS * i / _PUNTOS)) / 2:.4f} {i / _PUNTOS:.4f}"
+    for i in range(_PUNTOS + 1)
+)
+
+# Altura (en px, dentro del dibujito de 80x96) de la punta de cada plantilla: de ahí sale el rastro.
+PUNTAS = {
+    "moderno": 45, "dark-hack": 58, "aurora": 85, "flower": 84,
+    "simple": 77, "profesional": 72, "madera": 82, "tropical": 81,
+}
+
+
 def companero_html(plantilla: str) -> str:
-    """Devuelve el compañero de lectura de la plantilla (contenedor, cuerda y dibujito)."""
+    """Devuelve el compañero de lectura de la plantilla (contenedor, rastro y dibujito)."""
     interior = COMPANEROS.get(plantilla)
     if interior is None:
         return ""
+    punta = PUNTAS.get(plantilla, 82)
     return (
-        '<div class="companero trompo" aria-hidden="true">'
-        '<svg class="companero-cuerda" viewBox="0 0 80 1000" preserveAspectRatio="none" focusable="false">'
-        '<path pathLength="1" d="M40 0 Q52 250 40 500 Q28 750 40 1000"/></svg>'
+        f'<div class="companero trompo" style="--punta-y: {punta}px" aria-hidden="true">'
+        '<svg class="companero-cuerda" viewBox="0 0 1 1" preserveAspectRatio="none" focusable="false">'
+        f'<path d="{RASTRO}"/></svg>'
         '<div class="companero-movimiento">'
         '<svg viewBox="0 0 80 96" width="80" height="96" focusable="false">\n'
         + interior
