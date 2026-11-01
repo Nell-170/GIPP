@@ -591,25 +591,38 @@ PLANTILLA_HTML = """<!DOCTYPE html>
 SCRIPT_MAPA = """<script>
 (function () {
   var enlaces = document.querySelectorAll('.mapa a[href^="#"]');
-  if (!enlaces.length || !('IntersectionObserver' in window)) { return; }
-  var visibles = {};
-  var observador = new IntersectionObserver(function (entradas) {
-    entradas.forEach(function (entrada) {
-      visibles[entrada.target.id] = entrada.isIntersecting ? entrada.intersectionRatio : 0;
-    });
-    var mejor = null;
-    var maximo = 0;
-    Object.keys(visibles).forEach(function (id) {
-      if (visibles[id] > maximo) { maximo = visibles[id]; mejor = id; }
-    });
-    enlaces.forEach(function (enlace) {
-      enlace.classList.toggle('activo', mejor !== null && enlace.getAttribute('href') === '#' + mejor);
-    });
-  }, { threshold: [0, 0.15, 0.35, 0.6, 0.85], rootMargin: '-10% 0px -45% 0px' });
+  if (!enlaces.length) { return; }
+  var secciones = [];
   enlaces.forEach(function (enlace) {
     var seccion = document.getElementById(enlace.getAttribute('href').slice(1));
-    if (seccion) { observador.observe(seccion); }
+    if (seccion) { secciones.push(seccion); }
   });
+  if (!secciones.length) { return; }
+  var pendiente = false;
+  function marcar() {
+    pendiente = false;
+    var linea = window.innerHeight * 0.35;
+    var actual = secciones[0];
+    var ultima = secciones[secciones.length - 1];
+    var fin = window.scrollY + window.innerHeight;
+    var total = document.documentElement.scrollHeight;
+    if (fin >= total - 4) {
+      actual = ultima;
+    } else {
+      secciones.forEach(function (seccion) {
+        if (seccion.getBoundingClientRect().top <= linea) { actual = seccion; }
+      });
+    }
+    enlaces.forEach(function (enlace) {
+      enlace.classList.toggle('activo', enlace.getAttribute('href') === '#' + actual.id);
+    });
+  }
+  function programar() {
+    if (!pendiente) { pendiente = true; window.requestAnimationFrame(marcar); }
+  }
+  window.addEventListener('scroll', programar, { passive: true });
+  window.addEventListener('resize', programar);
+  marcar();
 })();
 </script>"""
 
