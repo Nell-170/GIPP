@@ -135,18 +135,20 @@ a:hover { text-decoration: underline; }
 }
 .mapa a:hover { color: var(--acento); background: var(--acento-suave); text-decoration: none; }
 .mapa a:hover::before { background: var(--acento); }
-/* Sección en la que estás: barra sólida a la izquierda, fondo del acento y texto claro.
-   Es distinto del hover (fondo suave y texto en acento), así no se confunden. */
-.mapa a.activo {
-  color: var(--tarjeta); background: var(--acento); font-weight: 700;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+/* Sección en la que estás: el texto queda subrayado con una línea gruesa del color del
+   acento (crece desde la izquierda) y el punto se rellena. El hover solo cambia el fondo,
+   así los dos estados no se confunden. */
+.mapa a::after {
+  content: ""; position: absolute; left: 0.7rem; right: 0.7rem; bottom: 0.28rem;
+  height: 3px; border-radius: 3px; background: var(--acento);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 0.25s ease;
 }
-.mapa a.activo::before { background: var(--tarjeta); transform: scale(1.25); }
-.mapa a.activo::after {
-  content: ""; position: absolute; left: -0.7rem; top: 0.35rem; bottom: 0.35rem;
-  width: 4px; border-radius: 0 4px 4px 0; background: var(--acento);
-}
-.mapa a:target { color: var(--tarjeta); background: var(--acento); }
+.mapa a.activo { color: var(--acento); font-weight: 700; }
+.mapa a.activo::before { background: var(--acento); transform: scale(1.3); }
+.mapa a.activo::after { transform: scaleX(1); }
+.mapa a:target { color: var(--acento); }
+.mapa a:target::after { transform: scaleX(1); }
 .seccion:target > h2 { color: var(--acento); }
 
 .seccion { padding: 2.4rem 0 0.4rem; scroll-margin-top: 1rem; }
@@ -329,7 +331,7 @@ footer p { margin: 0; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .saltar, .tarjeta, .chips li, a, .boton-contacto, .seccion h2::before,
-  .titulo-proyecto a::after, .ver a::after { transition: none; }
+  .titulo-proyecto a::after, .ver a::after, .mapa a::after { transition: none; }
   .hero, .avatar, .metricas li, .menu li, .tarjeta, .chips li, .tarjeta::before, .seccion {
     animation: none !important;
   }
@@ -337,7 +339,7 @@ footer p { margin: 0; }
 
 @media print {
   * { animation: none !important; transition: none !important; }
-  .titulo-proyecto a::after, .ver a::after { display: none; }
+  .titulo-proyecto a::after, .ver a::after, .mapa a::after { display: none; }
   body { background: #ffffff; color: #000000; }
   .banda { background: #ffffff; color: #000000; padding: 0 0 1rem; border-bottom: 2px solid #333333; }
   .avatar { display: none; }
