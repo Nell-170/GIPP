@@ -21,6 +21,7 @@ ESTILOS_CSS = """
   --sombra-alta: 0 10px 30px rgba(59, 91, 219, 0.16);
   --l0: #3b82f6; --l1: #10b981; --l2: #f59e0b; --l3: #ef4444;
   --l4: #8b5cf6; --l5: #ec4899; --l6: #14b8a6; --l7: #f97316;
+  --companero-cuerda: #b08a5c;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -151,34 +152,45 @@ a:hover { text-decoration: underline; }
 .mapa a:target::after { transform: scaleX(1); }
 .seccion:target > h2 { color: var(--acento); }
 
-/* --- Trompo de madera: acompaña el avance de lectura por el margen derecho --- */
-.trompo {
+/* --- Compañero de lectura: acompaña el avance de lectura por el margen derecho.
+   El dibujito baja, zigzaguea e inclina con las custom properties que setea el script.
+   La cuerda se dibuja de arriba hacia abajo conforme avanza la lectura. --- */
+.companero {
   position: fixed; top: 0; bottom: 0; right: 0; z-index: 40;
   width: max(0px, calc((100vw - 920px) / 2 - 1.5rem));
   pointer-events: none;
 }
-.trompo svg {
+.companero svg {
   display: block; width: 80px; height: 96px; overflow: visible;
   filter: drop-shadow(0 2px 2px rgba(70, 40, 15, 0.16));
 }
-.trompo-movimiento {
+.companero .companero-cuerda {
+  position: absolute; top: 6rem; right: 1rem; width: 80px;
+  height: max(0px, calc(100vh - 14rem));
+}
+.companero-cuerda path {
+  fill: none;
+  stroke: var(--companero-cuerda, #b08a5c);
+  stroke-width: 3;
+  stroke-dasharray: 1;
+  stroke-dashoffset: calc(1 - var(--trompo, 0));
+}
+.companero-movimiento {
   position: absolute; top: 6rem; right: 1rem;
   transform: translate(
     calc(var(--trompo-x, 0) * max(0px, (100vw - 920px) / 2 - 3.5rem - 80px)),
     calc(var(--trompo, 0) * max(0px, 100vh - 14rem))
   );
-  transition: transform 0.18s ease-out;
 }
-.trompo-cuerpo {
+.companero-cuerpo {
   transform-origin: 40px 82px;
   transform: rotate(var(--trompo-inclinacion, 0deg));
-  transition: transform 0.18s ease-out;
 }
 @media (prefers-reduced-motion: reduce) {
-  .trompo-movimiento, .trompo-cuerpo { transform: none; transition: none; }
+  .companero-movimiento, .companero-cuerpo { transform: none; }
 }
 @media (max-width: 1180px) {
-  .trompo { display: none; }
+  .companero { display: none; }
 }
 
 .seccion { padding: 2.4rem 0 0.4rem; scroll-margin-top: 1rem; }
@@ -361,15 +373,15 @@ footer p { margin: 0; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .saltar, .tarjeta, .chips li, a, .boton-contacto, .seccion h2::before,
-  .titulo-proyecto a::after, .ver a::after, .mapa a::after, .trompo-movimiento { transition: none; }
+  .titulo-proyecto a::after, .ver a::after, .mapa a::after { transition: none; }
   .hero, .avatar, .metricas li, .menu li, .tarjeta, .chips li, .tarjeta::before, .seccion,
-  .trompo-cuerpo, .trompo-brillo {
+  .companero-cuerpo, .companero-brillo {
     animation: none !important;
   }
 }
 
 @media print {
-  .trompo { display: none; }
+  .companero { display: none; }
   * { animation: none !important; transition: none !important; }
   .titulo-proyecto a::after, .ver a::after, .mapa a::after { display: none; }
   body { background: #ffffff; color: #000000; }
@@ -385,7 +397,7 @@ footer p { margin: 0; }
 """
 
 TEMAS = {
-    "moderno": ("Moderno", ""),
+    "moderno": ("Moderno", ":root {\n  --companero-cuerda: #3b5bdb;\n}"),
     "dark-hack": ("Dark Hack (terminal oscuro)", """
 :root {
   --fondo: #080b08; --tarjeta: #0e130e; --texto: #d6f5d6; --atenuado: #8aa88a;
@@ -408,6 +420,7 @@ body { font-family: ui-monospace, "Cascadia Code", "SF Mono", Consolas, "Courier
 .titulo-proyecto a { color: var(--acento); }
 .chip-lenguaje::before { border-radius: 2px; }
 @media (prefers-reduced-motion: reduce) { .hero h1::after { animation: none; } }
+:root { --companero-cuerda: #39ff88; }
 """),
     "aurora": ("Aurora (auroras boreales)", """
 :root {
@@ -431,6 +444,7 @@ body {
 .tarjeta::before { background: linear-gradient(90deg, #5eead4, #a78bfa); }
 .titulo-proyecto a { color: var(--texto); }
 .saltar { color: #07101f; }
+:root { --companero-cuerda: #5eead4; }
 """),
     "flower": ("Flower (floral pastel)", """
 :root {
@@ -457,6 +471,7 @@ body { font-family: Georgia, "Palatino Linotype", "Book Antiqua", serif; }
 .tarjeta::before { background: linear-gradient(90deg, #f59ac0, #d6427f); height: 6px; }
 .chips li { background: var(--acento-suave); border-color: transparent; color: #8a2b55; }
 .menu a { background: #ffffff; border: 1px solid var(--borde); }
+:root { --companero-cuerda: #d6427f; }
 """),
     "simple": ("Simple (minimalista claro)", """
 :root {
@@ -480,6 +495,7 @@ body { font-family: Georgia, "Palatino Linotype", "Book Antiqua", serif; }
 .menu a { background: transparent; border: 1px solid var(--borde); color: #111111; border-radius: 4px; }
 .titulo-proyecto a:hover, .ver a { color: #111111; text-decoration: underline; }
 .saltar { color: #ffffff; background: #111111; }
+:root { --companero-cuerda: #111111; }
 """),
     "profesional": ("Profesional (currículum)", """
 :root {
@@ -503,6 +519,7 @@ body { font-family: "Segoe UI", Calibri, "Helvetica Neue", Arial, sans-serif; }
 .tarjeta::before { display: none; }
 .tarjeta:hover { transform: none; }
 .chips li { background: var(--acento-suave); border-color: transparent; }
+:root { --companero-cuerda: #1f3a5f; }
 """),
     "madera": ("Madera (cálido artesanal)", """
 :root {
@@ -532,6 +549,7 @@ body { font-family: Georgia, "Palatino Linotype", "Book Antiqua", serif; }
 .chips li { border-radius: 6px; background: var(--acento-suave); }
 .titulo-proyecto a { color: #2e1f14; }
 .saltar { color: #fffaf0; background: #5e3216; }
+:root { --companero-cuerda: #8a4b21; }
 """),
     "tropical": ("Tropical (blanco, rojo y verde)", """
 :root {
@@ -575,6 +593,7 @@ body {
 .boton-contacto { color: #1b8a4b; }
 .boton-contacto:hover { background: var(--acento-suave); }
 .saltar { background: #e63946; color: #ffffff; }
+:root { --companero-cuerda: #1b8a4b; }
 """),
 }
 
@@ -671,25 +690,131 @@ SCRIPT_MAPA = """<script>
 </script>"""
 
 
-# Trompo de madera dibujado en SVG (sin imágenes externas): solo aparece en la plantilla
-# "madera" y acompaña el progreso de lectura (ver SCRIPT_MAPA).
-TROMPO_HTML = """<div class="trompo" aria-hidden="true"><div class="trompo-movimiento"><svg viewBox="0 0 80 96" width="80" height="96" focusable="false">
-<defs>
+# Compañeros de lectura: dibujito SVG propio por plantilla (sin imágenes externas ni
+# scripts). Cada uno define sus gradientes con IDs únicos por plantilla para que nunca
+# choquen, y el grupo .companero-cuerpo es el que rota con el progreso (ver SCRIPT_MAPA).
+COMPANEROS = {
+    "moderno": """<defs>
+<linearGradient id="gipp-grad-moderno" x1="0" y1="0" x2="1" y2="0">
+<stop offset="0" stop-color="#3b5bdb"/><stop offset="1" stop-color="#7048e8"/>
+</linearGradient>
+</defs>
+<g class="companero-cuerpo">
+<path d="M8 34 L40 12 L72 34 L40 25 Z" fill="url(#gipp-grad-moderno)" stroke="#2f49b8" stroke-width="1.2" stroke-linejoin="round"/>
+<path d="M8 34 L40 45 L72 34" fill="none" stroke="#7048e8" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M40 13 L40 25" stroke="#ffffff" stroke-width="1.6" opacity="0.9"/>
+</g>""",
+    "dark-hack": """<defs>
+<radialGradient id="gipp-grad-dark-hack" cx="0.5" cy="0.42" r="0.55">
+<stop offset="0" stop-color="#0f2a17"/><stop offset="1" stop-color="#071307"/>
+</radialGradient>
+</defs>
+<g class="companero-cuerpo">
+<rect x="14" y="34" width="52" height="24" rx="12" fill="none" stroke="#39ff88" stroke-width="6" opacity="0.14"/>
+<path d="M15 50 C15 62 13 67 22 67 C30 67 28 59 28 54" fill="url(#gipp-grad-dark-hack)" stroke="#39ff88" stroke-width="2.5"/>
+<path d="M65 50 C65 62 67 67 58 67 C50 67 52 59 52 54" fill="url(#gipp-grad-dark-hack)" stroke="#39ff88" stroke-width="2.5"/>
+<rect x="14" y="34" width="52" height="24" rx="12" fill="url(#gipp-grad-dark-hack)" stroke="#39ff88" stroke-width="2.5"/>
+<path d="M26 46 h8 M30 42 v8" stroke="#39ff88" stroke-width="2" stroke-linecap="round"/>
+<circle cx="38" cy="46" r="1.4" fill="#39ff88" opacity="0.8"/>
+<circle cx="43" cy="46" r="1.4" fill="#39ff88" opacity="0.8"/>
+<circle cx="50" cy="44" r="3.2" fill="#39ff88"/>
+<circle cx="58" cy="44" r="3.2" fill="#071307" stroke="#39ff88" stroke-width="1.8"/>
+</g>""",
+    "aurora": """<defs>
+<linearGradient id="gipp-grad-aurora" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#5eead4"/><stop offset="1" stop-color="#a78bfa"/>
+</linearGradient>
+</defs>
+<g class="companero-cuerpo">
+<path d="M40 9 L46 39 L76 47 L46 55 L40 85 L34 55 L4 47 L34 39 Z" fill="url(#gipp-grad-aurora)"/>
+<path d="M40 37 L43.5 44.5 L51 47 L43.5 49.5 L40 57" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.85" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="55" cy="27" r="2.2" fill="#ffffff" opacity="0.7"/>
+<circle cx="24" cy="60" r="1.8" fill="#ffffff" opacity="0.55"/>
+</g>""",
+    "flower": """<defs>
+<linearGradient id="gipp-grad-flower" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#d6427f"/><stop offset="1" stop-color="#f59ac0"/>
+</linearGradient>
+</defs>
+<g class="companero-cuerpo">
+<path d="M40 30 C18 38 12 66 40 84 C68 66 62 38 40 30 Z" fill="url(#gipp-grad-flower)" stroke="#c23a70" stroke-width="1.5"/>
+<path d="M40 45 L31 13 L39 19 L48 11 L45 24 L57 18 L46 40 Z" fill="#3c8a4f"/>
+<ellipse cx="30" cy="46" rx="1.6" ry="2.4" fill="#fde8f0"/>
+<ellipse cx="50" cy="46" rx="1.6" ry="2.4" fill="#fde8f0"/>
+<ellipse cx="22" cy="57" rx="1.6" ry="2.4" fill="#fde8f0"/>
+<ellipse cx="40" cy="59" rx="1.6" ry="2.4" fill="#fde8f0"/>
+<ellipse cx="58" cy="57" rx="1.6" ry="2.4" fill="#fde8f0"/>
+<ellipse cx="29" cy="70" rx="1.6" ry="2.4" fill="#fde8f0"/>
+<ellipse cx="51" cy="70" rx="1.6" ry="2.4" fill="#fde8f0"/>
+<ellipse cx="40" cy="79" rx="1.6" ry="2.4" fill="#fde8f0"/>
+</g>""",
+    "simple": """<defs>
+<linearGradient id="gipp-grad-simple" x1="0" y1="0" x2="1" y2="0">
+<stop offset="0" stop-color="#2b2b2b"/><stop offset="0.5" stop-color="#0d0d0d"/><stop offset="1" stop-color="#2b2b2b"/>
+</linearGradient>
+</defs>
+<g class="companero-cuerpo">
+<rect x="33" y="7" width="14" height="8" rx="3" fill="#bdbdbd"/>
+<rect x="33" y="15" width="14" height="5" fill="#666666"/>
+<rect x="33" y="20" width="14" height="42" fill="url(#gipp-grad-simple)"/>
+<path d="M33 62 L47 62 L40 77 Z" fill="#bdbdbd" stroke="#8f8f8f" stroke-width="1"/>
+<path d="M37.5 68.5 L42.5 68.5 L40 74.5 Z" fill="#111111"/>
+</g>""",
+    "profesional": """<defs>
+<linearGradient id="gipp-grad-profesional" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#2f5d8c"/><stop offset="1" stop-color="#1f3a5f"/>
+</linearGradient>
+</defs>
+<g class="companero-cuerpo">
+<path d="M32 37 L32 30 Q40 23 48 30 L48 37" fill="none" stroke="#c9a24d" stroke-width="3" stroke-linecap="round"/>
+<rect x="18" y="37" width="44" height="35" rx="6" fill="url(#gipp-grad-profesional)" stroke="#16293f" stroke-width="1.5"/>
+<rect x="34" y="52" width="12" height="5" rx="1.5" fill="#c9a24d"/>
+<rect x="22" y="60" width="5" height="9" rx="1" fill="#c9a24d"/>
+<rect x="53" y="60" width="5" height="9" rx="1" fill="#c9a24d"/>
+</g>""",
+    "madera": """<defs>
 <linearGradient id="gipp-madera" x1="0" y1="0" x2="1" y2="0">
 <stop offset="0" stop-color="#623b22"/><stop offset="0.32" stop-color="#c28a50"/>
 <stop offset="0.55" stop-color="#ac703e"/><stop offset="1" stop-color="#56301c"/>
 </linearGradient>
 </defs>
 <ellipse cx="40" cy="86" rx="17" ry="3" fill="#56301c" opacity="0.12"/>
-<g class="trompo-cuerpo">
+<g class="companero-cuerpo">
 <path d="M36 18 L36 10 Q40 6 44 10 L44 18" fill="#815331"/>
 <path d="M12 33 Q12 17 40 16 Q68 17 68 33 C68 50 51 66 43 76 L37 76 C29 66 12 50 12 33Z" fill="url(#gipp-madera)" stroke="#704526" stroke-width="1"/>
 <ellipse cx="40" cy="31" rx="27" ry="10" fill="none" stroke="#e5bf8d" stroke-width="2"/>
 <path d="M14 40 Q40 53 66 40 M19 50 Q40 61 61 50" fill="none" stroke="#61391f" stroke-width="1.5" opacity="0.5"/>
-<path class="trompo-brillo" d="M29 24 Q21 42 37 65" fill="none" stroke="#fff1d4" stroke-width="5" stroke-linecap="round" opacity="0.18"/>
+<path class="companero-brillo" d="M29 24 Q21 42 37 65" fill="none" stroke="#fff1d4" stroke-width="5" stroke-linecap="round" opacity="0.18"/>
 <path d="M37 75 L40 82 L43 75" fill="#80766a" stroke="#62584e" stroke-width="1"/>
-</g>
-</svg></div></div>"""
+</g>""",
+    "tropical": """<defs>
+<linearGradient id="gipp-grad-tropical" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#e63946"/><stop offset="1" stop-color="#f4a261"/>
+</linearGradient>
+</defs>
+<g class="companero-cuerpo">
+<path d="M40 45 L30 13 L38 31 L50 13 L44 31 L60 21 L46 40 Z" fill="#1b8a4b"/>
+<ellipse cx="40" cy="58" rx="19" ry="23" fill="url(#gipp-grad-tropical)" stroke="#d6303d" stroke-width="1.5"/>
+<path d="M26 48 L40 60 M22 56 L38 68 M25 66 L39 76 M54 48 L40 60 M58 56 L42 68 M55 66 L41 76" stroke="#8f1f29" stroke-width="1.5" opacity="0.4"/>
+<path d="M32 47 Q34 43 38 42" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
+</g>""",
+}
+
+
+def companero_html(plantilla: str) -> str:
+    """Devuelve el compañero de lectura de la plantilla (contenedor, cuerda y dibujito)."""
+    interior = COMPANEROS.get(plantilla)
+    if interior is None:
+        return ""
+    return (
+        '<div class="companero trompo" aria-hidden="true">'
+        '<svg class="companero-cuerda" viewBox="0 0 80 1000" preserveAspectRatio="none" focusable="false">'
+        '<path pathLength="1" d="M40 0 Q52 250 40 500 Q28 750 40 1000"/></svg>'
+        '<div class="companero-movimiento">'
+        '<svg viewBox="0 0 80 96" width="80" height="96" focusable="false">\n'
+        + interior
+        + '</svg></div></div>'
+    )
 
 
 def renderizar_portafolio(usuario: str, nombre: str, titular: str, resumen: str,
@@ -870,7 +995,7 @@ def renderizar_portafolio(usuario: str, nombre: str, titular: str, resumen: str,
         .replace("<INICIALES>", html.escape(iniciales))
         .replace("<METRICAS>", metricas_html)
         .replace("<MENU>", menu_html)
-        .replace("<MAPA>", mapa_html + (TROMPO_HTML if plantilla == "madera" else ""))
+        .replace("<MAPA>", mapa_html + companero_html(plantilla))
         .replace("<SCRIPT_MAPA>", script_mapa)
         .replace("<HASH_MAPA>", hash_mapa)
         .replace("<SECCIONES>", "".join(secciones))
