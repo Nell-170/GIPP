@@ -87,7 +87,7 @@ GIPP/
 Los README y descripciones de GitHub son texto no confiable (pueden traer instrucciones dirigidas a la IA). Defensas:
 
 - El texto se limpia (caracteres invisibles, comentarios y etiquetas HTML), se recorta y se entrega a la IA delimitado como datos, con una regla que prohíbe obedecerlo.
-- La IA nunca escribe HTML: solo devuelve nombre, titular y habilidades en JSON. La página sale de una plantilla fija con todo escapado, sin scripts ni recursos externos y con Content-Security-Policy.
+- La IA nunca escribe HTML: solo devuelve nombre, titular y habilidades en JSON. La página sale de una plantilla fija con todo escapado, sin recursos externos y con Content-Security-Policy. El único script es el del mapa lateral, escrito por nosotros, fijo y autorizado por hash (`script-src 'sha256-…'`): si cambia una sola letra, el navegador lo bloquea.
 - Nombre y habilidades solo se aceptan si aparecen literalmente en tus textos. Los enlaces solo apuntan a tu GitHub.
 - La interfaz muestra alertas si detecta instrucciones sospechosas o enlaces que no están en tus datos, y tú revisas el perfil antes de generar la página.
 
