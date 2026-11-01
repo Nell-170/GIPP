@@ -151,35 +151,31 @@ a:hover { text-decoration: underline; }
 .mapa a:target::after { transform: scaleX(1); }
 .seccion:target > h2 { color: var(--acento); }
 
-/* --- Trompo de madera: baja en zigzag por el borde derecho de la página ---
-   El carril ocupa el espacio libre a la derecha del contenido; el trompo se desplaza
-   verticalmente según la sección visible y oscila de lado a lado mientras gira. */
+/* --- Trompo de madera: acompaña el avance de lectura por el margen derecho --- */
 .trompo {
   position: fixed; top: 0; bottom: 0; right: 0; z-index: 40;
   width: max(0px, calc((100vw - 920px) / 2 - 1.5rem));
   pointer-events: none;
 }
 .trompo svg {
-  position: absolute; top: 0; right: 0.6rem;
-  animation: gipp-girar 1.6s linear infinite;
-  filter: drop-shadow(0 3px 3px rgba(70, 40, 15, 0.35));
+  display: block; width: 80px; height: 96px; overflow: visible;
+  filter: drop-shadow(0 2px 2px rgba(70, 40, 15, 0.16));
 }
 .trompo-movimiento {
-  position: absolute; top: 6rem; left: 0; right: 0;
-  transform: translateY(calc(var(--trompo, 0) * (100vh - 6rem - 11rem)));
-  transition: transform 0.6s cubic-bezier(0.34, 1.4, 0.64, 1);
+  position: absolute; top: 6rem; right: 1rem;
+  transform: translate(
+    calc(var(--trompo-x, 0) * max(0px, (100vw - 920px) / 2 - 3.5rem - 80px)),
+    calc(var(--trompo, 0) * max(0px, 100vh - 14rem))
+  );
+  transition: transform 0.18s ease-out;
 }
-.trompo-zigzag {
-  display: block; margin: 0 auto;
-  animation: gipp-zigzag 3.2s ease-in-out infinite alternate;
+.trompo-cuerpo {
+  transform-origin: 40px 82px;
+  transform: rotate(var(--trompo-inclinacion, 0deg));
+  transition: transform 0.18s ease-out;
 }
-@keyframes gipp-girar {
-  from { rotate: y 0deg; }
-  to { rotate: y 360deg; }
-}
-@keyframes gipp-zigzag {
-  from { translate: -0.9rem 0; }
-  to { translate: 0.9rem 0; }
+@media (prefers-reduced-motion: reduce) {
+  .trompo-movimiento, .trompo-cuerpo { transform: none; transition: none; }
 }
 @media (max-width: 1180px) {
   .trompo { display: none; }
@@ -365,14 +361,15 @@ footer p { margin: 0; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .saltar, .tarjeta, .chips li, a, .boton-contacto, .seccion h2::before,
-  .titulo-proyecto a::after, .ver a::after, .mapa a::after, .trompo svg { transition: none; }
+  .titulo-proyecto a::after, .ver a::after, .mapa a::after, .trompo-movimiento { transition: none; }
   .hero, .avatar, .metricas li, .menu li, .tarjeta, .chips li, .tarjeta::before, .seccion,
-  .trompo svg {
+  .trompo-cuerpo, .trompo-brillo {
     animation: none !important;
   }
 }
 
 @media print {
+  .trompo { display: none; }
   * { animation: none !important; transition: none !important; }
   .titulo-proyecto a::after, .ver a::after, .mapa a::after { display: none; }
   body { background: #ffffff; color: #000000; }
@@ -655,9 +652,13 @@ SCRIPT_MAPA = """<script>
     });
     var trompo = document.querySelector('.trompo');
     if (trompo) {
-      var indice = secciones.indexOf(actual);
-      var total = secciones.length;
-      trompo.style.setProperty('--trompo', total > 1 ? indice / (total - 1) : 0);
+      var recorrido = total - window.innerHeight;
+      var progreso = recorrido > 0 ? window.scrollY / recorrido : 0;
+      progreso = Math.max(0, Math.min(1, progreso));
+      var fase = progreso * Math.PI * 6;
+      trompo.style.setProperty('--trompo', progreso);
+      trompo.style.setProperty('--trompo-x', (Math.cos(fase) - 1) / 2);
+      trompo.style.setProperty('--trompo-inclinacion', Math.sin(fase) * 4 + 'deg');
     }
   }
   function programar() {
@@ -671,25 +672,24 @@ SCRIPT_MAPA = """<script>
 
 
 # Trompo de madera dibujado en SVG (sin imágenes externas): solo aparece en la plantilla
-# "madera" y se mueve por el mapa lateral según la sección visible (ver SCRIPT_MAPA).
-TROMPO_HTML = """<div class="trompo" aria-hidden="true"><div class="trompo-movimiento"><div class="trompo-zigzag"><svg viewBox="0 0 60 120" width="34" height="68">
+# "madera" y acompaña el progreso de lectura (ver SCRIPT_MAPA).
+TROMPO_HTML = """<div class="trompo" aria-hidden="true"><div class="trompo-movimiento"><svg viewBox="0 0 80 96" width="80" height="96" focusable="false">
 <defs>
 <linearGradient id="gipp-madera" x1="0" y1="0" x2="1" y2="0">
-<stop offset="0" stop-color="#5e3216"/><stop offset="0.35" stop-color="#a86a3a"/>
-<stop offset="0.6" stop-color="#8a4b21"/><stop offset="1" stop-color="#4a2710"/>
-</linearGradient>
-<linearGradient id="gipp-cuerda" x1="0" y1="0" x2="1" y2="0">
-<stop offset="0" stop-color="#cdbb9c"/><stop offset="0.4" stop-color="#f3ebdd"/>
-<stop offset="1" stop-color="#b9a583"/>
+<stop offset="0" stop-color="#623b22"/><stop offset="0.32" stop-color="#c28a50"/>
+<stop offset="0.55" stop-color="#ac703e"/><stop offset="1" stop-color="#56301c"/>
 </linearGradient>
 </defs>
-<path d="M30 4 C46 4 54 16 54 30 C54 48 42 62 30 62 C18 62 6 48 6 30 C6 16 14 4 30 4 Z" fill="url(#gipp-madera)"/>
-<path d="M9 24 C18 19 42 19 51 24" fill="none" stroke="#2b1608" stroke-width="3"/>
-<path d="M7 34 C17 29 43 29 53 34" fill="none" stroke="#f3ebdd" stroke-width="1.2" opacity="0.6"/>
-<path d="M30 62 C42 62 46 74 44 84 C42 96 34 104 30 108 C26 104 18 96 16 84 C14 74 18 62 30 62 Z" fill="url(#gipp-cuerda)"/>
-<path d="M18 72 L42 78 M17 80 L43 86 M19 90 L41 94" stroke="#a8926f" stroke-width="1.1" opacity="0.7"/>
-<path d="M30 108 L30 118" stroke="#6b6b6b" stroke-width="2.6" stroke-linecap="round"/>
-</svg></div></div></div>"""
+<ellipse cx="40" cy="86" rx="17" ry="3" fill="#56301c" opacity="0.12"/>
+<g class="trompo-cuerpo">
+<path d="M36 18 L36 10 Q40 6 44 10 L44 18" fill="#815331"/>
+<path d="M12 33 Q12 17 40 16 Q68 17 68 33 C68 50 51 66 43 76 L37 76 C29 66 12 50 12 33Z" fill="url(#gipp-madera)" stroke="#704526" stroke-width="1"/>
+<ellipse cx="40" cy="31" rx="27" ry="10" fill="none" stroke="#e5bf8d" stroke-width="2"/>
+<path d="M14 40 Q40 53 66 40 M19 50 Q40 61 61 50" fill="none" stroke="#61391f" stroke-width="1.5" opacity="0.5"/>
+<path class="trompo-brillo" d="M29 24 Q21 42 37 65" fill="none" stroke="#fff1d4" stroke-width="5" stroke-linecap="round" opacity="0.18"/>
+<path d="M37 75 L40 82 L43 75" fill="#80766a" stroke="#62584e" stroke-width="1"/>
+</g>
+</svg></div></div>"""
 
 
 def renderizar_portafolio(usuario: str, nombre: str, titular: str, resumen: str,
