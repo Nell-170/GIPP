@@ -152,9 +152,21 @@ for clave in ("usuario", "repos", "perfil", "html", "sobre_mi", "alertas", "avis
 encabezado(1)
 st.header("1. Usuario de GitHub")
 print(f"[GIPP] Modelo configurado para Redactor y Constructor: «{modelo_actual()}»", flush=True)
+st.info(
+    "**Antes de empezar.** GIPP lee solo tus repositorios públicos de GitHub. El texto de tus "
+    "READMEs, tus notas sobre tu rol y tu CV (si lo subes) se envía a Abacus.AI, un servicio externo "
+    "de inteligencia artificial que lo procesa con un modelo de lenguaje para redactar tu perfil. "
+    "Según la política de privacidad de Abacus.AI, ese contenido no se usa para entrenar modelos y "
+    "sus proveedores de modelos tienen retención cero; los datos se procesan en Estados Unidos. "
+    "GIPP no guarda nada en servidores propios. No se envían tu correo ni tu LinkedIn. Nada se "
+    "publica sin que tú revises y apruebes el texto."
+)
 with st.form("buscar"):
+    acepta = st.checkbox(
+        "Entiendo y acepto que el texto que aporto se envía a un servicio externo de IA para redactar mi perfil."
+    )
     entrada = st.text_input("Usuario o URL de GitHub", placeholder="https://github.com/usuario")
-    buscar = st.form_submit_button("Buscar repositorios")
+    buscar = st.form_submit_button("Buscar repositorios", disabled=not acepta)
 
 if buscar:
     try:
