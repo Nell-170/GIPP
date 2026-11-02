@@ -161,10 +161,11 @@ st.info(
     "GIPP no guarda nada en servidores propios. No se envían tu correo ni tu LinkedIn. Nada se "
     "publica sin que tú revises y apruebes el texto."
 )
+acepta = st.checkbox(
+    "Entiendo y acepto que el texto que aporto se envía a un servicio externo de IA para redactar mi perfil.",
+    key="acepta_envio_ia",
+)
 with st.form("buscar"):
-    acepta = st.checkbox(
-        "Entiendo y acepto que el texto que aporto se envía a un servicio externo de IA para redactar mi perfil."
-    )
     entrada = st.text_input("Usuario o URL de GitHub", placeholder="https://github.com/usuario")
     buscar = st.form_submit_button("Buscar repositorios", disabled=not acepta)
 
