@@ -99,7 +99,8 @@ Los README y descripciones de GitHub son texto no confiable (pueden traer instru
 
 **Qué se envía a Abacus.AI.** Para redactar el perfil, el texto se envía a Abacus.AI, un servicio externo de IA. Se envía el nombre de usuario de GitHub, el nombre, lenguaje y descripción de los repos seleccionados, sus READMEs, tus notas de rol, los logins de colaboradores de cada repo, tu README de perfil y el texto de tu CV (estos dos últimos solo si decides incluirlos). El archivo del CV no se envía: solo el texto extraído. **Tu correo y tu LinkedIn nunca se envían a la IA**; los escribes tú y van directo a la página.
 
-Según la documentación pública de Abacus.AI (consultada en noviembre de 2026), el contenido del cliente no se usa para entrenar modelos, sus proveedores de modelos tienen retención cero, los datos se procesan en Estados Unidos y se eliminan 30 días después de cancelar el servicio. Son declaraciones de ese proveedor, no una auditoría independiente.
+Según la política de privacidad de Abacus.AI, el contenido enviado a sus servidores no se usa para entrenar modelos y los proveedores de los modelos no lo conservan; sin embargo, Abacus.AI puede guardar registros de uso y su política no indica por cuánto tiempo conserva lo que recibe. Los datos se procesan 
+en Estados Unidos. 
 
 La aplicación te lo avisa en el paso 1 y no te deja continuar hasta que aceptes. Nada se publica sin que revises y apruebes el texto.
 
