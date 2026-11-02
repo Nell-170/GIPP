@@ -153,7 +153,7 @@ encabezado(1)
 st.header("1. Usuario de GitHub")
 print(f"[GIPP] Modelo configurado para Redactor y Constructor: «{modelo_actual()}»", flush=True)
 st.info(
-    "**Antes de empezar.** GIPP lee solo tus repositorios públicos de GitHub. El texto de tus "
+    "**Antes de empezar, lee esto por favor:** GIPP lee solo tus repositorios públicos de GitHub. El texto de tus "
     "READMEs, tus notas sobre tu rol y tu CV (si lo subes) se envía a Abacus.AI, un servicio externo "
     "de inteligencia artificial que lo procesa con un modelo de lenguaje para redactar tu perfil. "
     "Según la política de privacidad de Abacus.AI, ese contenido no se usa para entrenar modelos y "
