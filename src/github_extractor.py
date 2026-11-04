@@ -56,36 +56,88 @@ def _get(url: str, raw: bool = False) -> requests.Response:
     return resp
 
 
+def _metadatos(r: dict, usuario: str) -> dict:
+    """Metadatos de un repo de la API, con su dueño (el repo puede ser de otra persona)."""
+    dueno = (r.get("owner") or {}).get("login") or usuario
+    return {
+        "name": r["name"],
+        "owner": dueno,
+        "language": r.get("language"),
+        "description": r.get("description"),
+        "url": r.get("html_url"),
+        "updated_at": r.get("updated_at"),
+    }
+
+
 def listar_repos(usuario: str) -> list[dict]:
-    """Devuelve los repos propios y públicos (sin forks), solo metadatos."""
+    """Repos propios y públicos (sin forks) más los ajenos donde la persona participó.
+
+    Los propios salen de /users/{usuario}/repos; los ajenos, de la búsqueda de commits
+    de la persona. Se devuelven solo metadatos; el README se pide después.
+    """
     url = f"{GITHUB_API}/users/{usuario}/repos?per_page=100&sort=updated"
     repos = _get(url).json()
-    return [
-        {
-            "name": r["name"],
-            "language": r.get("language"),
-            "description": r.get("description"),
-            "url": r.get("html_url"),
-            "updated_at": r.get("updated_at"),
-        }
-        for r in repos
-        if not r.get("fork")  # los forks no son trabajo propio
-    ]
+    vistos = {r["name"] for r in repos}
+    propios = [_metadatos(r, usuario) for r in repos if not r.get("fork")]
+
+    ajenos = []
+    for repo in _repos_con_commits(usuario):
+        nombre = repo.get("name")
+        if not isinstance(nombre, str) or nombre in vistos:
+            continue
+        vistos.add(nombre)
+        ajenos.append(_metadatos(repo, usuario))
+    ajenos.sort(key=lambda r: r.get("updated_at") or "", reverse=True)
+    return propios + ajenos
 
 
-def obtener_readme(usuario: str, nombre_repo: str) -> str:
+def _repos_con_commits(usuario: str) -> list[dict]:
+    """Repos donde la persona tiene commits, incluidos los de otras personas.
+
+    Usa la búsqueda de commits (requiere GITHUB_TOKEN). Si no hay token o falla,
+    devuelve una lista vacía: el flujo sigue solo con los repos propios.
+    """
+    if not os.getenv("GITHUB_TOKEN", "").strip():
+        return []
+    encontrados: dict[str, dict] = {}
+    for pagina in range(1, 4):  # hasta 300 commits recientes
+        url = (
+            f"{GITHUB_API}/search/commits?q=author:{usuario}&sort=committer-date&order=desc"
+            f"&per_page=100&page={pagina}"
+        )
+        try:
+            resp = _get(url)
+        except GitHubError:
+            break
+        try:
+            datos = resp.json()
+        except ValueError:
+            break
+        items = datos.get("items") if isinstance(datos, dict) else None
+        if not isinstance(items, list) or not items:
+            break
+        for item in items:
+            repo = item.get("repository") if isinstance(item, dict) else None
+            if isinstance(repo, dict) and isinstance(repo.get("full_name"), str):
+                encontrados[repo["full_name"]] = repo
+        if len(items) < 100:
+            break
+    return list(encontrados.values())
+
+
+def obtener_readme(dueno: str, nombre_repo: str) -> str:
     """README recortado a README_MAX_CHARS. Cadena vacía si no hay o falla."""
     try:
-        resp = _get(f"{GITHUB_API}/repos/{usuario}/{nombre_repo}/readme", raw=True)
+        resp = _get(f"{GITHUB_API}/repos/{dueno}/{nombre_repo}/readme", raw=True)
     except GitHubError:
         return ""  # el README es opcional; el flujo sigue sin él
     return resp.text[:README_MAX_CHARS]
 
 
-def obtener_colaboradores(usuario: str, nombre_repo: str) -> list[str] | None:
+def obtener_colaboradores(dueno: str, nombre_repo: str) -> list[str] | None:
     """Logins de quienes contribuyeron al repo según GitHub. None si no se pudo consultar."""
     try:
-        datos = _get(f"{GITHUB_API}/repos/{usuario}/{nombre_repo}/contributors?per_page=30").json()
+        datos = _get(f"{GITHUB_API}/repos/{dueno}/{nombre_repo}/contributors?per_page=30").json()
     except (GitHubError, ValueError):
         return None
     if not isinstance(datos, list):

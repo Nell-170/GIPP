@@ -901,13 +901,12 @@ def renderizar_portafolio(usuario: str, nombre: str, titular: str, resumen: str,
 
     tarjetas = []
     lenguajes: set[str] = set()
-    prefijo_url = "https://github.com/" + usuario + "/"
     for proyecto in proyectos:
         nombre_proyecto = html.escape(proyecto.get("name") or "")
         url = proyecto.get("url")
         lenguaje = proyecto.get("language") or None
         descripcion = proyecto.get("description") or None
-        if isinstance(url, str) and url.startswith(prefijo_url):
+        if isinstance(url, str) and url.startswith("https://github.com/"):
             cabecera = (
                 '<h3 class="titulo-proyecto">'
                 f'<a href="{html.escape(url)}" target="_blank" rel="noopener noreferrer">'
@@ -929,7 +928,7 @@ def renderizar_portafolio(usuario: str, nombre: str, titular: str, resumen: str,
             piezas.append(
                 '<p class="descripcion">' + html.escape(descripcion) + "</p>"
             )
-        if isinstance(url, str) and url.startswith(prefijo_url):
+        if isinstance(url, str) and url.startswith("https://github.com/"):
             piezas.append(
                 f'<p class="ver"><a href="{html.escape(url)}" target="_blank" '
                 'rel="noopener noreferrer">Ver en GitHub &rarr;</a></p>'

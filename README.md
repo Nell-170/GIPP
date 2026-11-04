@@ -51,7 +51,7 @@ Edita `.env` y completa:
 | Variable | Obligatoria | Descripción |
 |---|---|---|
 | `ABACUS_API_KEY` | Sí | Clave de Abacus.AI |
-| `GITHUB_TOKEN` | No | Token de GitHub: sube el límite de 60 a 5000 peticiones por hora |
+| `GITHUB_TOKEN` | Recomendado | Token de GitHub: sube el límite de 60 a 5000 peticiones por hora y permite encontrar los repos de otras personas en los que participaste (la búsqueda de commits de GitHub exige token) |
 | `ABACUS_BASE_URL` | No | Endpoint compatible con OpenAI |
 | `ABACUS_MODEL` | No | Modelo a usar |
 
@@ -61,7 +61,7 @@ La primera vez que ejecutes Streamlit puede pedirte un correo en la consola. Es 
 
 ## Uso de la aplicación
 
-1. **Usuario de GitHub:** escribe tu usuario o la URL de tu perfil.
+1. **Usuario de GitHub:** escribe tu usuario o la URL de tu perfil. La app lista tus repositorios públicos propios (sin forks) y también los repositorios de otras personas en los que tienes commits, para que puedas incluir trabajos en equipo. Estos últimos solo aparecen si configuraste `GITHUB_TOKEN`.
 2. **Repositorios:** Tu README de perfil se muestra interpretado (Markdown convertido a HTML seguro, sin scripts ni imágenes externas). marca los que quieres incluir y escribe, si quieres, una línea sobre tu rol en cada uno. Si no escribes nada, la IA solo describirá lo que dice el README. Si tu perfil tiene un README propio (el repositorio con tu nombre de usuario), puedes decidir si se incluye: ahí suelen estar tu presentación y las herramientas que usas, y el portafolio las lista tal cual, sin inventar nada. También puedes subir tu CV (PDF, DOCX, TXT o MD, hasta 5 MB): se lee en memoria, se trata como texto no confiable y el modelo lo usa como contexto para la experiencia, la educación y las tecnologías que declares.
 3. **Revisión:** Si subiste el CV en PDF (hasta 2 MB), puedes ofrecerlo como botón "Descargar CV" en la sección de contacto: el PDF se incrusta en la página, así que el archivo HTML sigue siendo autónomo. lee el perfil generado, corrige lo que no sea cierto y aprueba. Aquí también eliges la plantilla y, si quieres, escribes tu contacto (correo y LinkedIn). La IA no ve ni modifica el contacto; se valida el formato y será público en la página.
 4. **Portafolio:** descarga el archivo HTML o revisa la vista previa.

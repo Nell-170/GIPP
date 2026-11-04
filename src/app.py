@@ -263,10 +263,9 @@ if repos:
                 # El README se pide solo para los repos seleccionados (ahorra peticiones).
                 with st.spinner("Leyendo READMEs y redactando el perfil..."):
                     for elegido in elegidos:
-                        elegido["readme"] = obtener_readme(st.session_state.usuario, elegido["name"])
-                        elegido["colaboradores"] = obtener_colaboradores(
-                            st.session_state.usuario, elegido["name"]
-                        )
+                        dueno = elegido.get("owner") or st.session_state.usuario
+                        elegido["readme"] = obtener_readme(dueno, elegido["name"])
+                        elegido["colaboradores"] = obtener_colaboradores(dueno, elegido["name"])
                     perfil, alertas = redactar_perfil(
                         st.session_state.usuario, elegidos, sobre_mi, cv_texto
                     )
