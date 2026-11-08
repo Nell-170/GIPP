@@ -19,7 +19,7 @@ from github_extractor import (
     obtener_readme,
 )
 from portafolio import TEMAS
-from llm_agents import LLMError, construir_portafolio, modelo_actual, redactar_perfil
+from llm_agents import LLMError, construir_portafolio, modelo_actual, modelo_constructor, redactar_perfil
 from portafolio import renderizar_portafolio
 from seguridad import (
     en_una_linea,
@@ -151,7 +151,7 @@ for clave in ("usuario", "repos", "perfil", "html", "sobre_mi", "alertas", "avis
 # ---------- 1. Usuario de GitHub ----------
 encabezado(1)
 st.header("1. Usuario de GitHub")
-print(f"[GIPP] Modelo configurado para Redactor y Constructor: «{modelo_actual()}»", flush=True)
+print(f"[GIPP] Modelo del Redactor: «{modelo_actual()}» | del Constructor: «{modelo_constructor()}»", flush=True)
 st.info(
     "**Antes de empezar, lee esto por favor:** GIPP lee solo tus repositorios públicos de GitHub. El texto de tus "
     "READMEs, tus notas sobre tu rol y tu CV (si lo subes) se envía a Abacus.AI, un servicio externo "

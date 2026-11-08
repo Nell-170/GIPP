@@ -53,7 +53,8 @@ Edita `.env` y completa:
 | `ABACUS_API_KEY` | Sí | Clave de Abacus.AI |
 | `GITHUB_TOKEN` | Recomendado | Token de GitHub: sube el límite de 60 a 5000 peticiones por hora y permite encontrar los repos de otras personas en los que participaste (la búsqueda de commits de GitHub exige token) |
 | `ABACUS_BASE_URL` | No | Endpoint compatible con OpenAI |
-| `ABACUS_MODEL` | No | Modelo a usar |
+| `ABACUS_MODEL` | No | Modelo del Redactor (por defecto `gpt-4o`) |
+| `ABACUS_MODEL_CONSTRUCTOR` | No | Modelo del Constructor (por defecto `route-llm`, que deja a RouteLLM elegir el modelo en cada petición) |
 
 **No subas `.env` a GitHub.** Ya está incluido en `.gitignore`. No pegues tus claves en issues, capturas ni en el chat.
 
@@ -106,7 +107,7 @@ La aplicación te lo avisa en el paso 1 y no te deja continuar hasta que aceptes
 
 ## Modelos
 
-El Redactor y el Constructor usan el modelo definido en `ABACUS_MODEL` (por defecto `gpt-4o`) a través de Abacus.AI. El Extractor no usa ningún modelo: solo consulta la API pública de GitHub. Al ejecutar la app, la consola muestra qué modelo se pide y cuál respondió en cada paso.
+El Redactor usa el modelo definido en `ABACUS_MODEL` (por defecto `gpt-4o`) y el Constructor el definido en `ABACUS_MODEL_CONSTRUCTOR` (por defecto `route-llm`, donde RouteLLM de Abacus.AI elige el modelo en cada petición), ambos a través de Abacus.AI. El Extractor no usa ningún modelo: solo consulta la API pública de GitHub. Al ejecutar la app, la consola muestra qué modelo se pide y cuál respondió en cada paso.
 
 ## Estado
 

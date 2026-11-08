@@ -6,7 +6,8 @@ se marca como datos y nunca llega al navegador como HTML escrito por el modelo.
 Variables de entorno:
     ABACUS_API_KEY   (obligatoria)
     ABACUS_BASE_URL  (opcional, por defecto DEFAULT_BASE_URL)
-    ABACUS_MODEL     (opcional, por defecto DEFAULT_MODEL)
+    ABACUS_MODEL     (opcional, por defecto DEFAULT_MODEL): modelo del Redactor
+    ABACUS_MODEL_CONSTRUCTOR (opcional, por defecto DEFAULT_MODEL_CONSTRUCTOR): modelo del Constructor
 """
 import json
 import os
@@ -35,6 +36,7 @@ from seguridad import (
 
 DEFAULT_BASE_URL = "https://routellm.abacus.ai/v1"  # verificar en la documentación de Abacus
 DEFAULT_MODEL = "gpt-4o"  # ajustar al modelo disponible en la cuenta
+DEFAULT_MODEL_CONSTRUCTOR = "route-llm"  # RouteLLM elige el modelo en cada petición
 
 PERFIL_MAX_CHARS = 4000
 
@@ -129,8 +131,13 @@ def modelo_actual() -> str:
     return os.getenv("ABACUS_MODEL", DEFAULT_MODEL)
 
 
-def _chat(system: str, user: str, temperature: float, tarea: str = "modelo") -> str:
-    modelo = modelo_actual()
+def modelo_constructor() -> str:
+    """Modelo del Constructor (ABACUS_MODEL_CONSTRUCTOR o RouteLLM por defecto)."""
+    return os.getenv("ABACUS_MODEL_CONSTRUCTOR", DEFAULT_MODEL_CONSTRUCTOR)
+
+
+def _chat(system: str, user: str, temperature: float, tarea: str = "modelo", modelo: str | None = None) -> str:
+    modelo = modelo or modelo_actual()
     print(f"[GIPP] {tarea}: pidiendo al modelo «{modelo}» vía {os.getenv('ABACUS_BASE_URL', DEFAULT_BASE_URL)}", flush=True)
     try:
         resp = _cliente().chat.completions.create(
@@ -296,7 +303,7 @@ def construir_portafolio(
 
     avisos: list[str] = []
     try:
-        crudo = _extraer_json(_chat(SYSTEM_ESTRUCTURADOR, user, temperature=0.0, tarea="Constructor (datos)"))
+        crudo = _extraer_json(_chat(SYSTEM_ESTRUCTURADOR, user, temperature=0.0, tarea="Constructor (datos)", modelo=modelo_constructor()))
     except ValueError:
         crudo = {}
         avisos.append(
