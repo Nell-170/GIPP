@@ -164,7 +164,8 @@ st.info(
     "publica sin que tú revises y apruebes el texto."
 )
 acepta = st.checkbox(
-    "Entiendo y acepto que el texto que aporto se envía a un servicio externo de IA para redactar mi perfil.",
+    "Declaro que soy mayor de edad y acepto que el texto que aporto se envíe a un servicio externo de IA "
+    "para redactar mi perfil. Entiendo que GIPP no guarda mis datos y que nada se publica sin mi revisión y aprobación.",
     key="acepta_envio_ia",
 )
 with st.form("buscar"):
